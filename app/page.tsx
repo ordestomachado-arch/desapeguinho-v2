@@ -104,7 +104,7 @@ export default function Feed() {
          // Localize onde começa o "anuncios.map" e mude a montagem do link para:
 const numeroLimpo = item.whatsapp?.replace(/\D/g, "") || "";      
 const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
-const linkWhats = "https://wa.me/send?phone=55" + numeroLimpo + "&text=" + mensagemCodificada;
+const linkWhats = "https://wa.me/55" + numeroLimpo + "&text=" + mensagemCodificada;
 
 
           return (
