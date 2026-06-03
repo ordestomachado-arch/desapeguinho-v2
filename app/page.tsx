@@ -101,9 +101,10 @@ export default function Feed() {
       {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-          // Garante que o link do Whats limpa traços/espaços e insere o código do país (55)
-          const numeroLimpo = item.whatsapp?.replace(/\D/g, "") || ""
-          const linkWhats = `https://wa.me{numeroLimpo}?text=Olá! Vi seu anúncio do desapego "${item.titulo}" no Desapeguinho POA e fiquei interessada.`
+         // Localize onde começa o "anuncios.map" e mude a montagem do link para:
+const numeroLimpo = item.whatsapp?.replace(/\D/g, "") || "";
+const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio do desapego "${item.titulo}" no Desapeguinho POA e tenho interesse.`);
+const linkWhats = `https://whatsapp.com{numeroLimpo}&text=${mensagemCodificada}`;
 
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
