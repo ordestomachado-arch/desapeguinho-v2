@@ -99,16 +99,24 @@ export default function Autenticacao() {
       } 
       
       else if (modo === 'cadastro') {
-        const { data, error } = await supabase.auth.signUp({ email, password: senha })
+
+                const { data, error } = await supabase.auth.signUp({ email, password: senha })
         if (error) throw error
 
         if (data.user) {
-          await supabase.from('perfis').insert([
-            { id: data.user.id, nome, whatsapp: whatsappLimpo, aceitou_termos: true }
-          ])
+          // CORRIGIDO: Mudamos de .insert() para .update() para atualizar a linha que a Trigger já criou
+          await supabase
+            .from('perfis')
+            .update({ 
+              nome: nome, 
+              whatsapp: whatsappLimpo, 
+              aceitou_termos: true 
+            })
+            .eq('id', data.user.id) // 👈 Garante que atualiza apenas o usuário atual
         }
         setMensagem('🎉 Conta criada! Verifique seu e-mail para confirmar.')
-      } 
+      }
+
       
       else if (modo === 'completar_perfil') {
         const { data: { user } } = await supabase.auth.getUser()
