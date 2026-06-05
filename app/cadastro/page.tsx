@@ -136,26 +136,33 @@ return (
             <div className="text-gray-300 my-2 text-4xl">📸</div>
           )}
 
-          <input 
-            type="file" 
-            id="foto-input"
-            required={fotos.length === 0}
-            multiple // Habilita a seleção de vários arquivos juntos na galeria móvel
-            accept="image/*" 
-            onChange={(e) => {
-              if (e.target.files) {
-                const selecionados = Array.from(e.target.files)
-                // Validação integrada para travar em até 3 arquivos
-                if (selecionados.length > 3) {
-                  alert("⚠️ Por favor, selecione no máximo 3 fotos por desapego.")
-                  setFotos(selecionados.slice(0, 3))
-                } else {
-                  setFotos(selecionados)
-                }
-              }
-            }} 
-            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#FF7F50] hover:file:bg-orange-100"
-          />
+<input 
+  type="file" 
+  id="foto-input"
+  required={fotos.length === 0}
+  multiple // Permite selecionar várias se for abrir a galeria
+  accept="image/*" 
+  onChange={(e) => {
+    if (e.target.files) {
+      const novosArquivos = Array.from(e.target.files)
+      
+      setFotos((fotosAntigas) => {
+        // Junta as fotos que já estavam salvas com as novas fotos tiradas
+        const listaAtualizada = [...fotosAntigas, ...novosArquivos]
+        
+        // Trava de segurança para não deixar passar de 3 fotos
+        if (listaAtualizada.length > 3) {
+          alert("⚠️ Você pode selecionar no máximo 3 fotos por desapego.")
+          return listaAtualizada.slice(0, 3)
+        }
+        
+        return listaAtualizada
+      })
+    }
+  }} 
+  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#FF7F50] hover:file:bg-orange-100"
+/>
+
         </div>
 
         <div>
