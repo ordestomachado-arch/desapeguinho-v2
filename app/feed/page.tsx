@@ -10,6 +10,7 @@ export default function Feed() {
   // Estados para os filtros ativos na tela
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
+  const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
 
   useEffect(() => {
     async function buscarDesapegos() {
