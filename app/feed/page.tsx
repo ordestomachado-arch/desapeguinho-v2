@@ -1,22 +1,29 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { supabase } from '../../supabaseClient'
-import Link from 'next/link' //
+import { supabase } from '../supabaseClient'
+import Link from 'next/link'
 
 export default function Feed() {
   const [anuncios, setAnuncios] = useState<any[]>([])
   const [carregando, setCarregando] = useState(true)
   
-  // Estados para os filtros ativos na tela
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
   const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
-//teste
+
+  const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+    'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+    'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+    'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
+    'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
+    'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
+  }
+
   useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
       
-      // Busca trazendo o relacionamento dos perfis
+      // Busca idêntica ao seu backup, incluindo o relacionamento opcional (!left) com perfis
       const { data } = await supabase
         .from('anuncios')
         .select('*, perfis:user_id!left(whatsapp, nome)')
@@ -24,10 +31,6 @@ export default function Feed() {
 
       let dadosFiltrados = data || []
 
-      // 1. DESATIVAMOS O FILTRO DE CIDADE temporariamente para testar se os itens voltam
-      // dadosFiltrados = dadosFiltrados.filter(item => !item.cidade || item.cidade === cidadeFiltro)
-
-      // 2. Filtros de Categoria e Gênero (permanecem ativos)
       if (categoriaFiltro !== 'Todos') {
         dadosFiltrados = dadosFiltrados.filter(item => item.categoria === categoriaFiltro)
       }
@@ -40,20 +43,47 @@ export default function Feed() {
     }
 
     buscarDesapegos()
-  }, [cidadeFiltro, categoriaFiltro, generoFiltro])
-
+  }, [categoriaFiltro, generoFiltro])
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-24">
-      {/* Cabeçalho igual ao do Penpot */}
+    <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
+      {/* Cabeçalho estável com os botões de controle integrados */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
-        <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
-        <span className="text-sm font-medium bg-gray-50 px-3 py-1 rounded-full text-gray-600">
-          📍 Porto Alegre
-        </span>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
+          <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2 py-0.5 rounded-full font-bold transition-all">
+            🎒 Meus Itens
+          </Link>
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmar = window.confirm("👶 Deseja mesmo sair da sua conta?");
+              if (confirmar) {
+                await supabase.auth.signOut()
+                window.location.reload()
+              }
+            }}
+            className="text-[10px] bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-500 px-2 py-0.5 rounded-full font-bold transition-all cursor-pointer"
+          >
+            Sair
+          </button>
+        </div>
+        
+        <div className="relative inline-block">
+          <span className="absolute left-2.5 top-1.5 text-xs">📍</span>
+          <select 
+            value={cidadeFiltro}
+            onChange={(e) => setCidadeFiltro(e.target.value)}
+            className="pl-7 pr-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-600 focus:outline-none appearance-none cursor-pointer"
+          >
+            {Object.keys(LOCALIDADES_METROPOLITANA).map((cidade) => (
+              <option key={cidade} value={cidade}>{cidade}</option>
+            ))}
+          </select>
+        </div>
       </header>
 
-      {/* Filtros Rápidos Estilizados (Tags Clicáveis) */}
+      {/* Filtros Rápidos (Tags Clicáveis) */}
       <div className="mb-6">
         <label className="text-xs font-bold text-gray-400 uppercase block mb-2">Categorias</label>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -81,9 +111,7 @@ export default function Feed() {
               key={gen}
               onClick={() => setGeneroFiltro(gen)}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${
-                generoFiltro === gen 
-                  ? 'bg-gray-800 text-white' 
-                  : 'bg-gray-100 text-gray-500'
+                generoFiltro === gen ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-500'
               }`}
             >
               {gen}
@@ -92,32 +120,30 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Estado de Carregamento */}
       {carregando && (
         <div className="text-center py-12 text-sm text-gray-400 animate-pulse">
           Buscando desapegos na região...
         </div>
       )}
 
-      {/* Lista Vazia */}
-      !carregando && anuncios.length === 0 && (
+      {!carregando && anuncios.length === 0 && (
         <div className="text-center py-12 text-sm text-gray-400">
           Nenhum desapego infantil encontrado para este filtro. 👶
         </div>
-      )
+      )}
 
-      {/* Grade de Produtos em Duas Colunas */}
+      {/* Grade de Produtos em Duas Colunas (Estrutura idêntica ao seu Backup funcional) */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-          // Busca o número do WhatsApp priorizando o Perfil, com fallback para o anúncio antigo
           const perfilDono = item.perfis;
-          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : item.whatsapp;
-          const numeroLimpo = whatsappOrigem ? whatsappOrigem.replace(/\D/g, "") : "";      
+          // Fallback inteligente: se não achar o whats na tabela perfis, usa o antigo do anúncio
+          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : (item.whatsapp || '');
+          const numeroLimpo = whatsappOrigem.replace(/\D/g, "");      
           
           const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio do desapego "${item.titulo}" no Desapeguinho POA e tenho interesse.`);
           const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
 
-          // Suporte blindado para imagem única antiga ou múltiplas novas
+          // Leitura blindada da foto: suporta tanto texto puro antigo quanto array novo
           let imagemPrincipal = '';
           if (item.foto_url) {
             if (Array.isArray(item.foto_url) && item.foto_url.length > 0) {
@@ -132,14 +158,12 @@ export default function Feed() {
                   imagemPrincipal = textoLimpo;
                 }
               } else {
-                // CORRIGIDO DEFINITIVAMENTE: Remove o .trim() do split que quebrava o React
-                imagemPrincipal = textoLimpo.split(',')[0];
+                imagemPrincipal = textoLimpo.split(',')[0]; // CORRIGIDO: Puxa o índice sem .trim() que quebrava o array
               }
             }
           }
 
           return (
-
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
               <div>
                 <div className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden">
@@ -151,7 +175,7 @@ export default function Feed() {
                 </div>
 
                 <div className="flex justify-between items-baseline mb-1">
-                  <span className="text-[#FF7F50] font-bold text-base">R$ {item.preco ? item.preco.toFixed(2).replace('.', ',') : '0,00'}</span>
+                  <span className="text-[#FF7F50] font-bold text-base">R$ {item.preco.toFixed(2).replace('.', ',')}</span>
                   {(item.tamanho_roupa || item.tamanho_calcado) && (
                     <span className="text-[10px] bg-orange-50 text-[#FF7F50] font-bold px-2 py-0.5 rounded uppercase">
                       {item.tamanho_roupa ? `Tam: ${item.tamanho_roupa}` : `Nº: ${item.tamanho_calcado}`}
@@ -191,4 +215,3 @@ export default function Feed() {
     </div>
   )
 }
-     
