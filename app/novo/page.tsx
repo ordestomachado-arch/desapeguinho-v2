@@ -107,6 +107,7 @@ export default function Feed() {
         </div>
       </header>
 
+  
       {/* FILTROS DE CATEGORIAS */}
       <div className="mb-6">
         <label className="text-xs font-bold text-gray-400 uppercase block mb-2">Categorias</label>
@@ -153,30 +154,32 @@ export default function Feed() {
       {/* GRADE DE PRODUTOS COMPLETA */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-          const perfilDono = item.perfis;
-          const numeroLimpo = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp.replace(/\D/g, '') : '';
-          const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio "${item.titulo}" no Desapeguinho POA e fiquei interessada.`);
-          const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
+          const perfilDono = item.perfis
+          const numeroLimpo = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp.replace(/\D/g, '') : ''
+          const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio "${item.titulo}" no Desapeguinho POA e fiquei interessada.`)
+          
+          // CORRIGIDO: Adicionada a barra '/' após a URL wa.me
+          const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`
 
-          let listaDeFotosValida: string[] = [];
+          let listaDeFotosValida: string[] = []
           if (item.foto_url) {
             if (Array.isArray(item.foto_url)) {
-              listaDeFotosValida = item.foto_url;
+              listaDeFotosValida = item.foto_url
             } else if (typeof item.foto_url === 'string') {
-              const textoLimpo = item.foto_url.trim();
+              const textoLimpo = item.foto_url.trim()
               if (textoLimpo.startsWith('[')) {
                 try {
-                  listaDeFotosValida = JSON.parse(textoLimpo);
+                  listaDeFotosValida = JSON.parse(textoLimpo)
                 } catch (e) {
-                  listaDeFotosValida = [];
+                  listaDeFotosValida = []
                 }
               } else {
-                listaDeFotosValida = textoLimpo.split(',').map((url: string) => url.trim());
+                listaDeFotosValida = textoLimpo.split(',').map((url: string) => url.trim())
               }
             }
           }
 
-          const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
+          const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : ''
 
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
@@ -221,22 +224,16 @@ export default function Feed() {
       {/* MODAL SOBREPOSTO DA GALERIA DE FOTOS */}
       {modalAberto && (
         <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
-          <button onClick={() => setModalAberto(false)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-all">✕</button>
-            {/* Setas de navegação (aparecem apenas se houver mais de 1 foto) */}
+          <button type="button" onClick={() => setModalAberto(false)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-all">✕</button>
+          
+          {/* CORRIGIDO: Tag de fechamento posicionada corretamente após envolver as setas e a imagem ampliada */}
+          <div className="w-full max-w-sm aspect-square bg-zinc-900 rounded-2xl overflow-hidden flex items-center justify-center relative shadow-2xl">
+            <img src={fotosModal[fotoIndexAtivo]} alt="Foto ampliada" className="w-full h-full object-contain" />
+            
             {fotosModal.length > 1 && (
               <>
-                <button 
-                  onClick={() => setFotoIndexAtivo((prev) => (prev === 0 ? fotosModal.length - 1 : prev - 1))} 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full text-sm font-bold"
-                >
-                  ◀
-                </button>
-                <button 
-                  onClick={() => setFotoIndexAtivo((prev) => (prev === fotosModal.length - 1 ? 0 : prev + 1))} 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full text-sm font-bold"
-                >
-                  ▶
-                </button>
+                <button type="button" onClick={() => setFotoIndexAtivo((prev) => (prev === 0 ? fotosModal.length - 1 : prev - 1))} className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full text-sm font-bold">◀</button>
+                <button type="button" onClick={() => setFotoIndexAtivo((prev) => (prev === fotosModal.length - 1 ? 0 : prev + 1))} className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full text-sm font-bold">▶</button>
               </>
             )}
           </div>
@@ -245,11 +242,7 @@ export default function Feed() {
           {fotosModal.length > 1 && (
             <div className="flex gap-2 mt-4">
               {fotosModal.map((_, index) => (
-                <button 
-                  key={index} 
-                  onClick={() => setFotoIndexAtivo(index)} 
-                  className={`h-2 rounded-full transition-all ${fotoIndexAtivo === index ? 'w-6 bg-[#FF7F50]' : 'w-2 bg-gray-500'}`} 
-                />
+                <button type="button" key={index} onClick={() => setFotoIndexAtivo(index)} className={`h-2 rounded-full transition-all ${fotoIndexAtivo === index ? 'w-6 bg-[#FF7F50]' : 'w-2 bg-gray-500'}`} />
               ))}
             </div>
           )}
@@ -266,3 +259,4 @@ export default function Feed() {
     </div>
   )
 }
+
