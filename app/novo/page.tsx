@@ -26,14 +26,19 @@ export default function Feed() {
   useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
+      
+      // Igual ao backup, mas trazendo a tabela perfis de forma opcional (!left)
       const { data } = await supabase
         .from('anuncios')
-        .select('*, perfis(whatsapp, nome)')
-        .eq('cidade', cidadeFiltro)
+        .select('*, perfis:user_id!left(whatsapp, nome)')
         .order('id', { ascending: false })
 
       let dadosFiltrados = data || []
 
+      // Filtra por cidade apenas se o anúncio tiver a cidade preenchida, senão mostra também
+      if (cidadeFiltro !== 'Todos') {
+        dadosFiltrados = dadosFiltrados.filter(item => !item.cidade || item.cidade === cidadeFiltro)
+      }
       if (categoriaFiltro !== 'Todos') {
         dadosFiltrados = dadosFiltrados.filter(item => item.categoria === categoriaFiltro)
       }
@@ -46,6 +51,7 @@ export default function Feed() {
     }
     buscarDesapegos()
   }, [cidadeFiltro, categoriaFiltro, generoFiltro])
+  
 
   const abrirGaleria = (item: any) => {
     if (!item.foto_url) return
