@@ -32,13 +32,12 @@ useEffect(() => {
     
     // Inicia buscando tudo
 let query = supabase.from('anuncios').select(`
-  *,
-  perfis:user_id!left (
-    whatsapp,
-    name,
-    nome
-  )
-`)
+      *,
+      perfis (
+        whatsapp,
+        nome
+      )
+    `)
 
 
     // 1. Filtro Obrigatório de Cidade (garante que só mostra anúncios da cidade ativa)
