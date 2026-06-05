@@ -108,23 +108,26 @@ export default function Feed() {
 
       {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
-        {!carregando && anuncios.map((item) => {
-          // 1. Captura o perfil do anunciante trazido pelo relacionamento do banco
-          const perfilDono = item.perfis;
+                {!carregando && anuncios.map((item) => {
+          // 1. CAPTURA BLINDADA: Tenta ler o perfil de todas as formas que o Supabase possa entregar
+          const perfilDono = item.perfis || item.perfil || null;
           
-          // 2. Fallback inteligente: Puxa o WhatsApp do perfil. Se o anúncio for muito antigo e não tiver, deixa vazio
-          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : (item.whatsapp || "");
+          // 2. BUSCA O NÚMERO: Pega do perfil novo ou usa o campo do anúncio antigo como plano B
+          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : (item.whatsapp || '');
           
-          // 3. Limpa caracteres especiais do telefone (parênteses, traços, espaços)
-          const numeroCru = whatsappOrigem.replace(/\D/g, "");      
+          // 3. LIMPEZA SEGURA: Só tenta limpar se o número realmente existir, evitando travar o app
+          const numeroCru = whatsappOrigem ? whatsappOrigem.replace(/\D/g, "") : "";      
           
-          // 4. Monta o número internacional sem correr o risco de duplicar o código 55
+          // 4. MONTAGEM INTERNACIONAL: Evita duplicar o código 55
           const numeroLimpo = numeroCru.startsWith("55") && numeroCru.length >= 12 ? numeroCru : "55" + numeroCru;
 
           const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
           
-          // 5. CORRIGIDO: Agora o link recebe a variável com o número recuperado do perfil!
-          const linkWhats = "https://wa.me/" + numeroLimpo + "?text=" + mensagemCodificada;
+          // 5. Se o número estiver vazio (anúncio de teste sem whats), gera um link limpo para não quebrar
+          const linkWhats = numeroCru ? "https://wa.me" + numeroLimpo + "?text=" + mensagemCodificada : "#";
+
+          // O restante do seu código de fotos e return continua exatamente igual abaixo...
+
 
 
           // 1. Extração segura para suportar tanto texto antigo quanto a array de 3 fotos futura
