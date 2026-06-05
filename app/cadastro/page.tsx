@@ -25,6 +25,11 @@ export default function CadastroAnuncio() {
 
   const [cidade, setCidade] = useState('Porto Alegre')
 
+    // Adicione este estado junto com os seus outros useState lá no topo:
+  const [userId, setUserId] = useState<string | null>(null)
+  const router = useRouter() // Certifique-se de importar o useRouter de 'next/navigation' no topo
+
+
   useEffect(() => {
 
     const bairrosDaCidade = LOCALIDADES_METROPOLITANA[cidade] || []
@@ -39,6 +44,22 @@ export default function CadastroAnuncio() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [carregando, setCarregando] = useState(false)
   const [mensagem, setMensagem] = useState('')
+
+  // Proteção da página: Só deixa criar anúncio se estiver logado
+  useEffect(() => {
+    async function verificarSessao() {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session || !session.user) {
+        // Se não tiver usuário logado, joga para a tela de login
+        router.push('/login')
+      } else {
+        // Se estiver logado, guarda o ID dele para usarmos no insert
+        setUserId(session.user.id)
+      }
+    }
+    verificarSessao()
+  }, [router])
 
   // Controla a criação e limpeza dos previews de imagem na tela
   useEffect(() => {
