@@ -97,51 +97,91 @@ export default function Feed() {
         </div>
       )
 
-      {/* Grade de Produtos em Duas Colunas */}
+       {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
-        {anuncios.map((item) => (
-          <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
-            <div>
-              {/* Espaço da Foto do Penpot */}
-              <div className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden">
-                {item.foto_url ? (
-                  <img src={item.foto_url} alt={item.titulo} className="object-cover h-full w-full" />
-                ) : (
-                  <span>Sem foto</span>
-                )}
+        {!carregando && anuncios.map((item) => {
+          // Busca o número do WhatsApp do Perfil ou do anúncio antigo como fallback
+          const perfilDono = item.perfis;
+          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : item.whatsapp;
+          const numeroLimpo = whatsappOrigem ? whatsappOrigem.replace(/\D/g, "") : "";      
+          
+          const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio do desapego "${item.titulo}" no Desapeguinho POA e tenho interesse.`);
+          const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
+
+          // EXTRAÇÃO CORRIGIDA DE IMAGEM (Blindada contra erros)
+          let imagemPrincipal = '';
+          if (item.foto_url) {
+            if (Array.isArray(item.foto_url) && item.foto_url.length > 0) {
+              imagemPrincipal = item.foto_url[0];
+            } else if (typeof item.foto_url === 'string') {
+              const textoLimpo = item.foto_url.trim();
+              if (textoLimpo.startsWith('[')) {
+                try {
+                  const parseado = JSON.parse(textoLimpo);
+                  imagemPrincipal = Array.isArray(parseado) ? parseado[0] : parseado;
+                } catch (e) {
+                  imagemPrincipal = textoLimpo;
+                }
+              } else if (textoLimpo.includes(',')) {
+                // CORRIGIDO: Removeu o .trim() do array gerado pelo split
+                const partes = textoLimpo.split(',');
+                imagemPrincipal = partes[0].trim();
+              } else {
+                imagemPrincipal = textoLimpo;
+              }
+            }
+          }
+
+          return (
+            <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
+              <div>
+                <div className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden">
+                  {imagemPrincipal ? (
+                    <img src={imagemPrincipal} alt={item.titulo} className="object-cover h-full w-full" />
+                  ) : (
+                    <span>Sem foto</span>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-baseline mb-1">
+                  <span className="text-[#FF7F50] font-bold text-base">R$ {item.preco ? item.preco.toFixed(2).replace('.', ',') : '0,00'}</span>
+                  {(item.tamanho_roupa || item.tamanho_calcado) && (
+                    <span className="text-[10px] bg-orange-50 text-[#FF7F50] font-bold px-2 py-0.5 rounded uppercase">
+                      {item.tamanho_roupa ? `Tam: ${item.tamanho_roupa}` : `Nº: ${item.tamanho_calcado}`}
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-xs font-medium text-gray-800 line-clamp-2 min-h-[32px]">{item.titulo}</h2>
               </div>
 
-              {/* Informações de Nicho */}
-              <div className="flex justify-between items-baseline mb-1">
-                <span className="text-[#FF7F50] font-bold text-base">R$ {item.preco}</span>
-                <span className="text-[10px] bg-orange-50 text-[#FF7F50] font-bold px-2 py-0.5 rounded uppercase">
-                  {item.tamanho_roupa ? `Tam: ${item.tamanho_roupa}` : `Nº: ${item.tamanho_calcado}`}
-                </span>
+              <div className="mt-3 pt-2 border-t border-gray-50 flex flex-col gap-2">
+                <div className="flex justify-between items-center text-[10px] text-gray-400">
+                  <span>📍 {item.bairro}</span>
+                  <span className="capitalize">{item.estacao}</span>
+                </div>
+                
+                <a 
+                  href={linkWhats}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-xl text-xs font-bold block transition-all"
+                >
+                  Chamar Whats
+                </a>
               </div>
-
-              <h2 className="text-xs font-medium text-gray-800 line-clamp-2 min-h-[32px]">{item.titulo}</h2>
             </div>
-
-            {/* Rodapé do Card com Bairro e Ação */}
-            <div className="mt-3 pt-2 border-t border-gray-50 flex flex-col gap-2">
-              <div className="flex justify-between items-center text-[10px] text-gray-400">
-                <span>📍 {item.bairro}</span>
-                <span className="capitalize">{item.estacao}</span>
-              </div>
-              
-              {/* Link direto para o WhatsApp do vendedor da Grande Porto Alegre */}
-              <a 
-                href={`https://wa.me{item.whatsapp}?text=Olá! Vi seu anúncio do desapego "${item.titulo}" no aplicativo e fiquei interessada.`}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-xl text-xs font-bold block transition-all"
-              >
-                Chamar Whats
-              </a>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
+
+      <Link 
+        href="/cadastro" 
+        className="fixed bottom-6 right-6 md:right-[calc(50%-11rem)] bg-[#FF7F50] hover:bg-[#FE7D6A] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-orange-100 transition-all z-50 text-3xl font-light"
+      >
+        +
+      </Link>
     </div>
   )
 }
+     
