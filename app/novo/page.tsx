@@ -26,20 +26,22 @@ export default function Feed() {
   useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
-      let query = supabase.from('anuncios').select(`
-        *,
-        perfis (
-          whatsapp,
-          nome
-        )
-      `)
+      const { data } = await supabase
+        .from('anuncios')
+        .select('*, perfis(whatsapp, nome)')
+        .eq('cidade', cidadeFiltro)
+        .order('id', { ascending: false })
 
-      query = query.eq('cidade', cidadeFiltro)
-      if (categoriaFiltro !== 'Todos') query = query.eq('categoria', categoriaFiltro)
-      if (generoFiltro !== 'Todos') query = query.eq('genero', generoFiltro)
+      let dadosFiltrados = data || []
 
-      const { data } = await query.order('id', { ascending: false })
-      if (data) setAnuncios(data)
+      if (categoriaFiltro !== 'Todos') {
+        dadosFiltrados = dadosFiltrados.filter(item => item.categoria === categoriaFiltro)
+      }
+      if (generoFiltro !== 'Todos') {
+        dadosFiltrados = dadosFiltrados.filter(item => item.genero === generoFiltro)
+      }
+
+      setAnuncios(dadosFiltrados)
       setCarregando(false)
     }
     buscarDesapegos()
