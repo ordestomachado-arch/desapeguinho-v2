@@ -4,14 +4,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import Link from 'next/link'
 
-const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
-  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
-  'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
-  'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
-  'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
-  'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
-}
-
 export default function Feed() {
   
   const [anuncios, setAnuncios] = useState<any[]>([])
@@ -25,6 +17,14 @@ export default function Feed() {
   const [modalAberto, setModalAberto] = useState(false)
   const [fotosModal, setFotosModal] = useState<string[]>([])
   const [fotoIndexAtivo, setFotoIndexAtivo] = useState(0)
+
+  const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+  'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+  'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
+  'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
+  'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
+}
 
 useEffect(() => {
   async function buscarDesapegos() {
