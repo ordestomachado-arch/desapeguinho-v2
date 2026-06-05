@@ -3,7 +3,7 @@ const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
 const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([])
 
 const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
-  'Porto Alegre': ['Todos', 'Hípica', 'Menino Deus', 'Moinhos de Vento', 'Tristeza', 'Centro', 'Zona Sul','Zona Norte'],
+  'Porto Alegre': ['Todos', 'Hípica', 'Menino Deus', 'Moinhos de Vento', 'Tristeza', 'Centro', 'Zona Sul', 'Zona Norte'],
   'Canoas': ['Todos', 'Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
   'Gravataí': ['Todos', 'Centro', 'Parque dos Anjos', 'Morada do Vale'],
   'Viamão': ['Todos', 'Centro', 'Santa Isabel', 'Viamópolis'],
@@ -88,9 +88,25 @@ useEffect(() => {
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
       <header className="flex justify-between items-center mb-6 border-b pb-3">
-        <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
-        <span className="text-sm font-medium bg-gray-50 px-3 py-1 rounded-full text-gray-600">📍 Porto Alegre</span>
-      </header>
+  <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
+  
+  {/* Seletor Dinâmico de Cidades da Região Metropolitana */}
+  <div className="relative inline-block">
+    <span className="absolute left-2.5 top-1.5 text-xs">📍</span>
+    <select 
+      value={cidadeFiltro}
+      onChange={(e) => setCidadeFiltro(e.target.value)}
+      className="pl-7 pr-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-600 focus:outline-none appearance-none cursor-pointer"
+    >
+      {Object.keys(LOCALIDADES_METROPOLITANA).map((cidade) => (
+        <option key={cidade} value={cidade}>
+          {cidade}
+        </option>
+      ))}
+    </select>
+  </div>
+</header>
+
 
       {/* FILTROS DE CATEGORIAS */}
       <div className="mb-6">
