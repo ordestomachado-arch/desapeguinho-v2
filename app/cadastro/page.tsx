@@ -14,46 +14,61 @@ export default function CadastroAnuncio() {
   const [tamanhoRoupa, setTamanhoRoupa] = useState('6M')
   const [tamanhoCalcado, setTamanhoCalcado] = useState('')
   
-  // Novos estados para o upload da foto
-  const [foto, setFoto] = useState<File | null>(null)
+   // Novos estados para o upload de múltiplas fotos e previews
+  const [fotos, setFotos] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [carregando, setCarregando] = useState(false)
   const [mensagem, setMensagem] = useState('')
+
+  // Controla a criação e limpeza dos previews de imagem na tela
+  useEffect(() => {
+    if (fotos.length === 0) {
+      setPreviewUrls([])
+      return
+    }
+    const urls = fotos.map(f => URL.createObjectURL(f))
+    setPreviewUrls(urls)
+    return () => urls.forEach(url => URL.revokeObjectURL(url))
+  }, [fotos])
 
   async function salvarAnuncio(e: any) {
     e.preventDefault()
     setCarregando(true)
     setMensagem('')
 
-    if (!foto) {
-      setMensagem('❌ Por favor, selecione uma foto do desapego!')
+    if (fotos.length === 0) {
+      setMensagem('❌ Por favor, selecione ao menos uma foto do desapego!')
       setCarregando(false)
       return
     }
 
     try {
-      // 1. Gera um nome único e seguro para a imagem usando timestamp
-      const extensaoArquivo = foto.name.split('.').pop()
-      const nomeDoArquivo = `${Date.now()}.${extensaoArquivo}`
+      const urlsPublicasGeradas: string[] = []
 
-      // 2. Envia o arquivo para o bucket do Supabase Storage
-      const { data: dadosUpload, error: erroUpload } = await supabase.storage
-        .from('fotos-desapegos') // Nome do seu Bucket Público no Supabase
-        .upload(nomeDoArquivo, foto)
+      // Percorre a lista de fotos enviando uma por uma para o Supabase
+      for (const arquivo of fotos) {
+        const extensaoArquivo = arquivo.name.split('.').pop()
+        // Adiciona um número aleatório junto ao timestamp para evitar conflito de nomes
+        const nomeDoArquivo = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${extensaoArquivo}`
 
-      if (erroUpload) {
-        setMensagem('❌ Erro no upload da imagem: ' + erroUpload.message)
-        setCarregando(false)
-        return
+        const { data: dadosUpload, error: erroUpload } = await supabase.storage
+          .from('fotos-desapegos')
+          .upload(nomeDoArquivo, arquivo)
+
+        if (erroUpload) {
+          setMensagem('❌ Erro no upload da imagem: ' + erroUpload.message)
+          setCarregando(false)
+          return
+        }
+
+        const { data: dadosUrl } = supabase.storage
+          .from('fotos-desapegos')
+          .getPublicUrl(nomeDoArquivo)
+
+        urlsPublicasGeradas.push(dadosUrl.publicUrl)
       }
 
-      // 3. Captura a URL pública do arquivo enviado
-      const { data: dadosUrl } = supabase.storage
-        .from('fotos-desapegos')
-        .getPublicUrl(nomeDoArquivo)
-
-      const urlDaFotoPublica = dadosUrl.publicUrl
-
-      // 4. Grava os dados na tabela do banco adicionando a URL da foto
+      // 4. Grava os dados na tabela do banco adicionando a ARRAY com as fotos
       const { error: erroBanco } = await supabase.from('anuncios').insert([
         {
           titulo,
@@ -66,7 +81,7 @@ export default function CadastroAnuncio() {
           cor,
           tamanho_roupa: categoria === 'Roupas' ? tamanhoRoupa : null,
           tamanho_calcado: categoria === 'Calçados' ? parseInt(tamanhoCalcado) : null,
-          foto_url: urlDaFotoPublica, // Gravação da URL pública no banco
+          foto_url: urlsPublicasGeradas, // Envia o vetor com as URLs geradas
         }
       ])
 
@@ -79,7 +94,7 @@ export default function CadastroAnuncio() {
         setPreco('')
         setWhatsapp('')
         setCor('')
-        setFoto(null)
+        setFotos([]) // Limpa a lista de arquivos
         // Reseta o input de arquivo fisicamente
         const arquivoInput = document.getElementById('foto-input') as HTMLInputElement
         if (arquivoInput) arquivoInput.value = ''
@@ -90,8 +105,7 @@ export default function CadastroAnuncio() {
       setCarregando(false)
     }
   }
-
-  return (
+return (
     <div className="max-w-md mx-auto p-6 bg-white min-h-screen text-gray-800 shadow-lg">
       <header className="mb-6 flex items-center justify-between border-b pb-4">
         <h1 className="text-2xl font-bold text-[#FF7F50]">Desapeguinho POA</h1>
@@ -105,15 +119,41 @@ export default function CadastroAnuncio() {
       )}
 
       <form onSubmit={salvarAnuncio} className="space-y-4">
-        {/* Campo para carregar a foto do desapego */}
-        <div className="border-2 border-dashed border-gray-200 p-4 rounded-xl text-center bg-gray-50">
-          <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Foto do Desapego (Obrigatória)</label>
+        {/* Bloco de Upload Ajustado para Múltiplas Fotos com Preview Lado a Lado */}
+        <div className="border-2 border-dashed border-gray-200 p-4 rounded-xl text-center bg-gray-50 flex flex-col items-center justify-center min-h-[160px]">
+          <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Fotos do Desapego (Até 3 imagens)</label>
+          
+          {/* Exibe as miniaturas das fotos selecionadas com barra de rolagem se necessário */}
+          {previewUrls && previewUrls.length > 0 ? (
+            <div className="flex gap-2 mb-3 overflow-x-auto max-w-full p-1 scrollbar-none">
+              {previewUrls.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white shrink-0">
+                  <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-300 my-2 text-4xl">📸</div>
+          )}
+
           <input 
             type="file" 
             id="foto-input"
-            required
+            required={fotos.length === 0}
+            multiple // Habilita a seleção de vários arquivos juntos na galeria móvel
             accept="image/*" 
-            onChange={(e) => setFoto(e.target.files?.[0] || null)} 
+            onChange={(e) => {
+              if (e.target.files) {
+                const selecionados = Array.from(e.target.files)
+                // Validação integrada para travar em até 3 arquivos
+                if (selecionados.length > 3) {
+                  alert("⚠️ Por favor, selecione no máximo 3 fotos por desapego.")
+                  setFotos(selecionados.slice(0, 3))
+                } else {
+                  setFotos(selecionados)
+                }
+              }
+            }} 
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#FF7F50] hover:file:bg-orange-100"
           />
         </div>
@@ -205,3 +245,4 @@ export default function CadastroAnuncio() {
     </div>
   )
 }
+
