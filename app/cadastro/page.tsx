@@ -17,7 +17,7 @@ export default function CadastroAnuncio() {
   const [cidade, setCidade] = useState('Porto Alegre')
 
 const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
-  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro' 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
   'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
   'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
   'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
