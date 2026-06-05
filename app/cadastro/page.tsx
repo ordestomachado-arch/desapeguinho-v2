@@ -33,7 +33,7 @@ export default function CadastroAnuncio() {
 
   useEffect(() => {
 
-    const bairrosDa = LOCALIDADES_METROPOLITANA[] || []
+    const bairrosDa = LOCALIDADES_METROPOLITANA[cidade] || []
     if (bairrosDa.length > 0) {
       setBairro(bairrosDa[0]) // Garante que seleciona o primeiro bairro válido da lista
     }
