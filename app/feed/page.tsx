@@ -98,10 +98,10 @@ export default function Feed() {
         </div>
       )
 
-       {/* Grade de Produtos em Duas Colunas */}
+      {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-          // Busca o número do WhatsApp do Perfil ou do anúncio antigo como fallback
+          // Busca o número do WhatsApp priorizando o Perfil, com fallback para o anúncio antigo
           const perfilDono = item.perfis;
           const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : item.whatsapp;
           const numeroLimpo = whatsappOrigem ? whatsappOrigem.replace(/\D/g, "") : "";      
@@ -109,7 +109,7 @@ export default function Feed() {
           const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio do desapego "${item.titulo}" no Desapeguinho POA e tenho interesse.`);
           const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
 
-          // EXTRAÇÃO CORRIGIDA DE IMAGEM (Blindada contra erros)
+          // Suporte blindado para imagem única antiga ou múltiplas novas
           let imagemPrincipal = '';
           if (item.foto_url) {
             if (Array.isArray(item.foto_url) && item.foto_url.length > 0) {
@@ -123,17 +123,15 @@ export default function Feed() {
                 } catch (e) {
                   imagemPrincipal = textoLimpo;
                 }
-              } else if (textoLimpo.includes(',')) {
-                // CORRIGIDO: Removeu o .trim() do array gerado pelo split
-                const partes = textoLimpo.split(',');
-                imagemPrincipal = partes[0].trim();
               } else {
-                imagemPrincipal = textoLimpo;
+                // CORRIGIDO DEFINITIVAMENTE: Remove o .trim() do split que quebrava o React
+                imagemPrincipal = textoLimpo.split(',')[0];
               }
             }
           }
 
           return (
+
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
               <div>
                 <div className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden">
