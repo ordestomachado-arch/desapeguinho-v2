@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import Link from 'next/link'
 
-const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
-const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([])
-
 const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
   'Porto Alegre': ['Todos', 'Hípica', 'Menino Deus', 'Moinhos de Vento', 'Tristeza', 'Centro', 'Zona Sul', 'Zona Norte'],
   'Canoas': ['Todos', 'Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
@@ -21,6 +18,8 @@ export default function Feed() {
   const [carregando, setCarregando] = useState(true)
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
+  const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
+  const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([])
 
   // ESTADOS PARA O MODAL DA GALERIA
   const [modalAberto, setModalAberto] = useState(false)
