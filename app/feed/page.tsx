@@ -11,7 +11,7 @@ export default function Feed() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
   const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
-
+//teste
   useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
