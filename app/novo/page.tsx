@@ -96,25 +96,43 @@ let query = supabase.from('anuncios').select(`
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
+            {/* CABEÇALHO ATUALIZADO COM BOTÃO DE SAIR */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
-  <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
-  
-  {/* Seletor Dinâmico de Cidades da Região Metropolitana */}
-  <div className="relative inline-block">
-    <span className="absolute left-2.5 top-1.5 text-xs">📍</span>
-    <select 
-      value={cidadeFiltro}
-      onChange={(e) => setCidadeFiltro(e.target.value)}
-      className="pl-7 pr-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-600 focus:outline-none appearance-none cursor-pointer"
-    >
-      {Object.keys(LOCALIDADES_METROPOLITANA).map((cidade) => (
-        <option key={cidade} value={cidade}>
-          {cidade}
-        </option>
-      ))}
-    </select>
-  </div>
-</header>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
+          <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2 py-0.5 rounded-full font-bold transition-all">
+            🎒 Meus Itens
+          </Link>
+          {/* BOTÃO DE SAIR ADICIONADO AQUI */}
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmar = window.confirm("👶 Deseja mesmo sair da sua conta?");
+              if (confirmar) {
+                await supabase.auth.signOut();
+                window.location.reload(); // Recarrega a página para limpar os estados
+              }
+            }}
+            className="text-[10px] bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-500 px-2 py-0.5 rounded-full font-bold transition-all cursor-pointer"
+          >
+            Sair
+          </button>
+        </div>
+        
+        <div className="relative inline-block">
+          <span className="absolute left-2.5 top-1.5 text-xs">📍</span>
+          <select 
+            value={cidadeFiltro}
+            onChange={(e) => setCidadeFiltro(e.target.value)}
+            className="pl-7 pr-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-600 focus:outline-none appearance-none cursor-pointer"
+          >
+            {Object.keys(LOCALIDADES_METROPOLITANA).map((cidade) => (
+              <option key={cidade} value={cidade}>{cidade}</option>
+            ))}
+          </select>
+        </div>
+      </header>
+
 
 
       {/* FILTROS DE CATEGORIAS */}
