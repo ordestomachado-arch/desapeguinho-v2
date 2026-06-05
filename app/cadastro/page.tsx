@@ -13,6 +13,17 @@ export default function CadastroAnuncio() {
   const [cor, setCor] = useState('')
   const [tamanhoRoupa, setTamanhoRoupa] = useState('6M')
   const [tamanhoCalcado, setTamanhoCalcado] = useState('')
+
+  const [cidade, setCidade] = useState('Porto Alegre')
+
+const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro' 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+  'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+  'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
+  'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
+  'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
+}
+
   
    // Novos estados para o upload de múltiplas fotos e previews
   const [fotos, setFotos] = useState<File[]>([])
