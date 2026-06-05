@@ -31,7 +31,13 @@ useEffect(() => {
     setCarregando(true)
     
     // Inicia buscando tudo
-    let query = supabase.from('anuncios').select('*, perfis(whatsapp, nome)')
+    let query = supabase.from('anuncios').select(`
+  *,
+  perfis:user_id (
+    whatsapp,
+    nome
+  )
+`)
 
     // 1. Filtro Obrigatório de Cidade (garante que só mostra anúncios da cidade ativa)
     // Para isso funcionar perfeitamente, garanta que no seu banco ou no campo "bairro" você salve também a cidade, ou adicione uma coluna "cidade" na sua tabela 'anuncios' do Supabase.
