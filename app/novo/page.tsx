@@ -218,12 +218,6 @@ let query = supabase.from('anuncios').select(`
           // 2. GARANTE QUE SÓ ACESSA A POSIÇÃO ZERO SE A LISTA REALMENTE TIVER ITENS
           const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
 
-          
-          // 2. GARANTE QUE SÓ ACESSA A POSIÇÃO 0 SE A LISTA TIVER ITENS
-          const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
-
-
-
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
               <div>
