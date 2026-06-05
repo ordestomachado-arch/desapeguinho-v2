@@ -1,4 +1,15 @@
 "use client"
+const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
+const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([])
+
+const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+  'Porto Alegre': ['Todos', 'Hípica', 'Menino Deus', 'Moinhos de Vento', 'Tristeza', 'Centro', 'Zona Sul','Zona Norte'],
+  'Canoas': ['Todos', 'Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+  'Gravataí': ['Todos', 'Centro', 'Parque dos Anjos', 'Morada do Vale'],
+  'Viamão': ['Todos', 'Centro', 'Santa Isabel', 'Viamópolis'],
+  'Novo Hamburgo': ['Todos', 'Centro', 'Hamburgo Velho', 'Lomba Grande']
+}
+
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import Link from 'next/link'
@@ -14,20 +25,29 @@ export default function Feed() {
   const [fotosModal, setFotosModal] = useState<string[]>([])
   const [fotoIndexAtivo, setFotoIndexAtivo] = useState(0)
 
-  useEffect(() => {
-    async function buscarDesapegos() {
-      setCarregando(true)
-      let query = supabase.from('anuncios').select('*')
+useEffect(() => {
+  async function buscarDesapegos() {
+    setCarregando(true)
+    
+    // Inicia buscando tudo
+    let query = supabase.from('anuncios').select('*')
 
-      if (categoriaFiltro !== 'Todos') query = query.eq('categoria', categoriaFiltro)
-      if (generoFiltro !== 'Todos') query = query.eq('genero', generoFiltro)
+    // 1. Filtro Obrigatório de Cidade (garante que só mostra anúncios da cidade ativa)
+    // Para isso funcionar perfeitamente, garanta que no seu banco ou no campo "bairro" você salve também a cidade, ou adicione uma coluna "cidade" na sua tabela 'anuncios' do Supabase.
+    query = query.eq('cidade', cidadeFiltro)
 
-      const { data } = await query.order('id', { ascending: false })
-      if (data) setAnuncios(data)
-      setCarregando(false)
-    }
-    buscarDesapegos()
-  }, [categoriaFiltro, generoFiltro])
+    // 2. Filtro de Categoria e Gênero (que você já tinha)
+    if (categoriaFiltro !== 'Todos') query = query.eq('categoria', categoriaFiltro)
+    if (generoFiltro !== 'Todos') query = query.eq('genero', generoFiltro)
+
+    const { data } = await query.order('id', { ascending: false })
+    
+    if (data) setAnuncios(data)
+    setCarregando(false)
+  }
+
+  buscarDesapegos()
+}, [cidadeFiltro, categoriaFiltro, generoFiltro]) // Adicionado cidadeFiltro aqui
 
   // Função que abre a galeria ao clicar na foto
   
