@@ -91,6 +91,7 @@ const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
           titulo,
           preco: parseFloat(preco),
           whatsapp,
+          cidade,
           bairro,
           categoria,
           genero,
