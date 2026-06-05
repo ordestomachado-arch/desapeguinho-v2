@@ -185,13 +185,30 @@ let query = supabase.from('anuncios').select(`
           const linkWhats = `https://wa.me/55${numeroLimpo}?text=${mensagemCodificada}`;
 
           // Extrai a primeira imagem caso no futuro vire um array
-          const listaDeFotosValida = Array.isArray(item.foto_url) 
-            ? item.foto_url 
-            : (typeof item.foto_url === 'string' && item.foto_url.startsWith('['))
-              ? JSON.parse(item.foto_url)
-              : [item.foto_url];
+          // 1. EXTRAÇÃO BLINDADA DE FOTOS (Evita que o app trave com dados nulos)
+          const extrairFotos Seguras = () => {
+            if (!item.foto_url) return [];
+            if (Array.isArray(item.foto_url)) return item.foto_url;
+            
+            if (typeof item.foto_url === 'string') {
+              const textoLimpo = item.foto_url.trim();
+              if (textoLimpo.startsWith('[')) {
+                try {
+                  return JSON.parse(textoLimpo);
+                } catch (e) {
+                  return [];
+                }
+              }
+              return textoLimpo.split(',').map((url: string) => url.trim());
+            }
+            return [];
+          };
 
-          const imagemPrincipal = listaDeFotosValida[0] || '';
+          const listaDeFotosValida = extrairFotosSeguras();
+          
+          // 2. GARANTE QUE SÓ ACESSA A POSIÇÃO 0 SE A LISTA TIVER ITENS
+          const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
+
 
 
           return (
