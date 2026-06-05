@@ -22,7 +22,9 @@ export default function Feed() {
       setCarregando(true)
       
       // Inicia a query buscando tudo do banco de dados
-      let query = supabase.from('anuncios').select('*')
+      // CORRIGIDO: Agora busca os dados do anúncio E o WhatsApp do perfil associado
+      let query = supabase.from('anuncios').select('*, perfis:user_id!left(whatsapp, nome)')
+
 
       // Aplica os filtros dinamicamente se o usuário selecionar algo diferente de 'Todos'
       if (categoriaFiltro !== 'Todos') {
@@ -107,10 +109,22 @@ export default function Feed() {
       {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-         // Localize onde começa o "anuncios.map" e mude a montagem do link para:
-const numeroLimpo = item.whatsapp?.replace(/\D/g, "") || "";      
-const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
-const linkWhats = "https://wa.me/55" + numeroLimpo + "?text=" + mensagemCodificada;
+          // 1. Captura o perfil do anunciante trazido pelo relacionamento do banco
+          const perfilDono = item.perfis;
+          
+          // 2. Fallback inteligente: Puxa o WhatsApp do perfil. Se o anúncio for muito antigo e não tiver, deixa vazio
+          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : (item.whatsapp || "");
+          
+          // 3. Limpa caracteres especiais do telefone (parênteses, traços, espaços)
+          const numeroCru = whatsappOrigem.replace(/\D/g, "");      
+          
+          // 4. Monta o número internacional sem correr o risco de duplicar o código 55
+          const numeroLimpo = numeroCru.startsWith("55") && numeroCru.length >= 12 ? numeroCru : "55" + numeroCru;
+
+          const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
+          
+          // 5. CORRIGIDO: Agora o link recebe a variável com o número recuperado do perfil!
+          const linkWhats = "https://wa.me/" + numeroLimpo + "?text=" + mensagemCodificada;
 
 
           // 1. Extração segura para suportar tanto texto antigo quanto a array de 3 fotos futura
