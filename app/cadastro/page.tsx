@@ -24,7 +24,7 @@ export default function CadastroAnuncio() {
   const [tamanhoRoupa, setTamanhoRoupa] = useState('6M')
   const [tamanhoCalcado, setTamanhoCalcado] = useState('')
 
-  const [cidade, setCidade] = useState('Porto Alegre')
+  const [, set] = useState('Porto Alegre')
 
     // Adicione este estado junto com os seus outros useState lá no topo:
   const [userId, setUserId] = useState<string | null>(null)
@@ -33,11 +33,11 @@ export default function CadastroAnuncio() {
 
   useEffect(() => {
 
-    const bairrosDaCidade = LOCALIDADES_METROPOLITANA[cidade] || []
-    if (bairrosDaCidade.length > 0) {
-      setBairro(bairrosDaCidade[0]) // Garante que seleciona o primeiro bairro válido da lista
+    const bairrosDa = LOCALIDADES_METROPOLITANA[] || []
+    if (bairrosDa.length > 0) {
+      setBairro(bairrosDa[0]) // Garante que seleciona o primeiro bairro válido da lista
     }
-  }, [cidade])
+  }, [])
 
   
    // Novos estados para o upload de múltiplas fotos e previews
@@ -115,8 +115,7 @@ export default function CadastroAnuncio() {
         {
           titulo,
           preco: parseFloat(preco),
-          whatsapp,
-          cidade,
+          whatsappuser_id: userId,cidade,
           bairro,
           categoria,
           genero,
