@@ -46,11 +46,13 @@ export default function Feed() {
       const textoLimpo = item.foto_url.replace(/[\[\]"']/g, '').trim()
       
       // Quebra o texto sempre que encontrar uma vírgula
-      listaDeFotos = textoLimpo.split(',').map(url => url.trim())
+
+listaDeFotos = textoLimpo.split(',').map((url: string) => url.trim())
     }
       
     // Remove qualquer item vazio da lista para não quebrar o carrossel
-    listaDeFotos = listaDeFotos.filter(url => url !== '')
+    listaDeFotos = listaDeFotos.filter((url: string) => url !== '')
+
 
     setFotosModal(listaDeFotos)
     setFotoIndexAtivo(0)
