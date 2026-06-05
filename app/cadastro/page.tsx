@@ -252,15 +252,34 @@ return (
           </div>
         </div>
 
+         {/* Seletor Dinâmico de Cidade */}
         <div>
-          <label className="text-xs font-bold text-gray-500 uppercase">Bairro de Retirada</label>
-          <select value={bairro} onChange={(e) => setBairro(e.target.value)} className="w-full mt-1 p-3 bg-white border border-gray-200 rounded-xl focus:outline-[#FF7F50]">
-            <option value="Hípica">Hípica</option>
-            <option value="Moinhos de Vento">Moinhos de Vento</option>
-            <option value="Tristeza">Tristeza</option>
-            <option value="Canoas - Centro">Canoas - Centro</option>
+          <label className="text-xs font-bold text-gray-500 uppercase">Cidade de Retirada</label>
+          <select 
+            value={cidade} 
+            onChange={(e) => setCidade(e.target.value)} 
+            className="w-full mt-1 p-3 bg-white border border-gray-200 rounded-xl focus:outline-[#FF7F50]"
+          >
+            {Object.keys(LOCALIDADES_METROPOLITANA).map((itemCidade) => (
+              <option key={itemCidade} value={itemCidade}>{itemCidade}</option>
+            ))}
           </select>
         </div>
+
+        {/* Seletor Dinâmico de Bairro */}
+        <div>
+          <label className="text-xs font-bold text-gray-500 uppercase">Bairro de Retirada</label>
+          <select 
+            value={bairro} 
+            onChange={(e) => setBairro(e.target.value)} 
+            className="w-full mt-1 p-3 bg-white border border-gray-200 rounded-xl focus:outline-[#FF7F50]"
+          >
+            {(LOCALIDADES_METROPOLITANA[cidade] || []).map((itemBairro) => (
+              <option key={itemBairro} value={itemBairro}>{itemBairro}</option>
+            ))}
+          </select>
+        </div>
+
 
         <button type="submit" disabled={carregando} className="w-full bg-[#FF7F50] text-white p-4 rounded-xl font-bold transition-all hover:bg-[#FE7D6A] disabled:bg-gray-300">
           {carregando ? 'Publicando...' : 'Publicar Desapego'}
