@@ -33,15 +33,32 @@ export default function Feed() {
   const abrirGaleria = (item: any) => {
     if (!item.foto_url) return
     
-    // Tratamento preventivo: aceita string única ou array de fotos futuras
-    const listaDeFotos = Array.isArray(item.foto_url) 
-      ? item.foto_url 
-      : [item.foto_url]
+    let listaDeFotos: string[] = []
+
+    // Se o dado vier como Array nativo do Supabase (text[])
+    if (Array.isArray(item.foto_url)) {
+      listaDeFotos = item.foto_url
+    } 
+    // Se o dado vier como uma String (caso de anúncios antigos ou conversão de texto)
+    else if (typeof item.foto_url === 'string') {
+      if (item.foto_url.startsWith('[') && item.foto_url.endsWith(']')) {
+        try {
+          // Tenta decodificar caso o banco tenha salvo como texto de array JSON
+          listaDeFotos = JSON.parse(item.foto_url)
+        } catch (e) {
+          listaDeFotos = [item.foto_url]
+        }
+      } else {
+        // Se for apenas uma única URL em texto puro, separa por vírgula caso exista
+        listaDeFotos = item.foto_url.split(',')
+      }
+    }
       
     setFotosModal(listaDeFotos)
     setFotoIndexAtivo(0)
     setModalAberto(true)
   }
+
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
