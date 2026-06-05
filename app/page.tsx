@@ -21,12 +21,9 @@ export default function Feed() {
     async function buscarDesapegos() {
       setCarregando(true)
       
-      // Inicia a query buscando tudo do banco de dados
-      // CORRIGIDO: Agora busca os dados do anúncio E o WhatsApp do perfil associado
-      let query = supabase.from('anuncios').select('*, perfis:user_id!left(whatsapp, nome)')
+      // MUDANÇA: Agora busca da nossa View unificada usando o select(*) simples que você sabe que funciona!
+      let query = supabase.from('vw_anuncios').select('*')
 
-
-      // Aplica os filtros dinamicamente se o usuário selecionar algo diferente de 'Todos'
       if (categoriaFiltro !== 'Todos') {
         query = query.eq('categoria', categoriaFiltro)
       }
@@ -41,7 +38,8 @@ export default function Feed() {
     }
 
     buscarDesapegos()
-  }, [categoriaFiltro, generoFiltro]) // Executa novamente o filtro se o usuário clicar em uma tag
+  }, [categoriaFiltro, generoFiltro])
+
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
@@ -107,28 +105,21 @@ export default function Feed() {
       )}
 
       {/* Grade de Produtos em Duas Colunas */}
+            {/* Grade de Produtos em Duas Colunas */}
       <div className="grid grid-cols-2 gap-4">
-                {!carregando && anuncios.map((item) => {
-          // 1. CAPTURA BLINDADA: Tenta ler o perfil de todas as formas que o Supabase possa entregar
-          const perfilDono = item.perfis || item.perfil || null;
+        {!carregando && anuncios.map((item) => {
           
-          // 2. BUSCA O NÚMERO: Pega do perfil novo ou usa o campo do anúncio antigo como plano B
-          const whatsappOrigem = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp : (item.whatsapp || '');
+          // Captura o WhatsApp centralizado na View ou usa a coluna antiga como plano B
+          const whatsappOrigem = item.whatsapp_vendedor || item.whatsapp || '';
+          const numeroCru = whatsappOrigem.replace(/\D/g, "");      
           
-          // 3. LIMPEZA SEGURA: Só tenta limpar se o número realmente existir, evitando travar o app
-          const numeroCru = whatsappOrigem ? whatsappOrigem.replace(/\D/g, "") : "";      
-          
-          // 4. MONTAGEM INTERNACIONAL: Evita duplicar o código 55
+          // Evita duplicar o código 55
           const numeroLimpo = numeroCru.startsWith("55") && numeroCru.length >= 12 ? numeroCru : "55" + numeroCru;
 
           const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
           
-          // 5. Se o número estiver vazio (anúncio de teste sem whats), gera um link limpo para não quebrar
+          // Se não houver número cadastrado (anúncio antigo incompleto), gera link vazio para não quebrar a tela
           const linkWhats = numeroCru ? "https://wa.me" + numeroLimpo + "?text=" + mensagemCodificada : "#";
-
-          // O restante do seu código de fotos e return continua exatamente igual abaixo...
-
-
 
           // 1. Extração segura para suportar tanto texto antigo quanto a array de 3 fotos futura
           let listaDeFotosValida: string[] = [];
