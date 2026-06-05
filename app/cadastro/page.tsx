@@ -115,7 +115,7 @@ export default function CadastroAnuncio() {
         {
           titulo,
           preco: parseFloat(preco),
-          whatsappuser_id: userId,cidade,
+          user_id: userId,cidade,
           bairro,
           categoria,
           genero,
