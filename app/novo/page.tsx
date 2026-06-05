@@ -185,26 +185,39 @@ let query = supabase.from('anuncios').select(`
           const linkWhats = `https://wa.me/55${numeroLimpo}?text=${mensagemCodificada}`;
 
           // Extrai a primeira imagem caso no futuro vire um array
-          // 1. EXTRAÇÃO BLINDADA DE FOTOS (Evita que o app trave com dados nulos)
-          const extrairFotos Seguras = () => {
-            if (!item.foto_url) return [];
-            if (Array.isArray(item.foto_url)) return item.foto_url;
-            
-            if (typeof item.foto_url === 'string') {
+   
+         {!carregando && anuncios.map((item) => {
+          // Captura com segurança o perfil do anunciante trazido pelo relacionamento do banco
+          const perfilDono = item.perfis;
+          
+          // Busca o número do WhatsApp dentro da tabela de perfis e limpa formatações
+          const numeroLimpo = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp.replace(/\D/g, '') : '';
+          const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio "${item.titulo}" no Desapeguinho POA e fiquei interessada.`);
+          const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
+
+          // 1. EXTRAÇÃO BLINDADA DE FOTOS (Trata dados nulos e antigos sem travar a tela)
+          let listaDeFotosValida: string[] = [];
+          
+          if (item.foto_url) {
+            if (Array.isArray(item.foto_url)) {
+              listaDeFotosValida = item.foto_url;
+            } else if (typeof item.foto_url === 'string') {
               const textoLimpo = item.foto_url.trim();
               if (textoLimpo.startsWith('[')) {
                 try {
-                  return JSON.parse(textoLimpo);
+                  listaDeFotosValida = JSON.parse(textoLimpo);
                 } catch (e) {
-                  return [];
+                  listaDeFotosValida = [];
                 }
+              } else {
+                listaDeFotosValida = textoLimpo.split(',').map((url: string) => url.trim());
               }
-              return textoLimpo.split(',').map((url: string) => url.trim());
             }
-            return [];
-          };
+          }
 
-          const listaDeFotosValida = extrairFotosSeguras();
+          // 2. GARANTE QUE SÓ ACESSA A POSIÇÃO ZERO SE A LISTA REALMENTE TIVER ITENS
+          const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
+
           
           // 2. GARANTE QUE SÓ ACESSA A POSIÇÃO 0 SE A LISTA TIVER ITENS
           const imagemPrincipal = listaDeFotosValida.length > 0 ? listaDeFotosValida[0] : '';
