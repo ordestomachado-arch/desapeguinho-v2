@@ -31,7 +31,7 @@ useEffect(() => {
     setCarregando(true)
     
     // Inicia buscando tudo
-    let query = supabase.from('anuncios').select('*')
+    let query = supabase.from('anuncios').select('*, perfis(whatsapp, nome)')
 
     // 1. Filtro Obrigatório de Cidade (garante que só mostra anúncios da cidade ativa)
     // Para isso funcionar perfeitamente, garanta que no seu banco ou no campo "bairro" você salve também a cidade, ou adicione uma coluna "cidade" na sua tabela 'anuncios' do Supabase.
@@ -151,19 +151,23 @@ useEffect(() => {
       {/* GRADE DE PRODUTOS */}
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
-          // Fallback seguro para o link do Whatsapp caso o número venha formatado
-          const numeroLimpo = item.whatsapp?item.whatsapp.replace(/\D/g, '') : ''
+          // Captura com segurança o perfil do anunciante trazido pelo relacionamento do banco
+          const perfilDono = item.perfis;
+          
+          // Busca o número do WhatsApp dentro da tabela de perfis e limpa formatações
+          const numeroLimpo = perfilDono && perfilDono.whatsapp ? perfilDono.whatsapp.replace(/\D/g, '') : '';
           const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio "${item.titulo}" no Desapeguinho POA e fiquei interessada.`);
           const linkWhats = `https://wa.me/55${numeroLimpo}?text=${mensagemCodificada}`;
 
           // Extrai a primeira imagem caso no futuro vire um array
           const listaDeFotosValida = Array.isArray(item.foto_url) 
-  ? item.foto_url 
-  : (typeof item.foto_url === 'string' && item.foto_url.startsWith('['))
-    ? JSON.parse(item.foto_url)
-    : [item.foto_url];
+            ? item.foto_url 
+            : (typeof item.foto_url === 'string' && item.foto_url.startsWith('['))
+              ? JSON.parse(item.foto_url)
+              : [item.foto_url];
 
-const imagemPrincipal = listaDeFotosValida[0] || '';
+          const imagemPrincipal = listaDeFotosValida[0] || '';
+
 
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
