@@ -32,32 +32,36 @@ export default function Feed() {
   // Função que abre a galeria ao clicar na foto
   
    const abrirGaleria = (item: any) => {
-    if (!item.foto_url) return
-    
-    let listaDeFotos: string[] = []
+  if (!item.foto_url) return
+  
+  let listaDeFotos: string[] = []
 
-    // 1. Se o Supabase já entregou como uma Array nativa do JavaScript
+  try {
+    // 1. Se o dado já for uma Array nativa do JavaScript
     if (Array.isArray(item.foto_url)) {
       listaDeFotos = item.foto_url
     } 
-    // 2. Se entregou como String (Texto puro), limpa e separa as URLs
+    // 2. Se for uma String que começa com '[', decodifica o formato JSON do banco
+    else if (typeof item.foto_url === 'string' && item.foto_url.trim().startsWith('[')) {
+      listaDeFotos = JSON.parse(item.foto_url)
+    } 
+    // 3. Se for uma String comum separada por vírgulas
     else if (typeof item.foto_url === 'string') {
-      // Remove colchetes ou aspas que o banco possa ter inserido por erro de sintaxe
-      const textoLimpo = item.foto_url.replace(/[\[\]"']/g, '').trim()
-      
-      // Quebra o texto sempre que encontrar uma vírgula
-
-listaDeFotos = textoLimpo.split(',').map((url: string) => url.trim())
+      listaDeFotos = item.foto_url.split(',').map((url: string) => url.trim())
     }
-      
-    // Remove qualquer item vazio da lista para não quebrar o carrossel
-    listaDeFotos = listaDeFotos.filter((url: string) => url !== '')
-
-
-    setFotosModal(listaDeFotos)
-    setFotoIndexAtivo(0)
-    setModalAberto(true)
+  } catch (erro) {
+    // Fallback de segurança: se falhar, joga a string bruta para dentro da lista
+    listaDeFotos = [item.foto_url]
   }
+    
+  // Filtra links vazios para não gerar telas pretas no carrossel
+  listaDeFotos = listaDeFotos.filter((url: string) => url && url.trim() !== '')
+
+  setFotosModal(listaDeFotos)
+  setFotoIndexAtivo(0)
+  setModalAberto(true)
+}
+
 
 
 
@@ -116,7 +120,13 @@ listaDeFotos = textoLimpo.split(',').map((url: string) => url.trim())
           const linkWhats = `https://wa.me/55${numeroLimpo}?text=${mensagemCodificada}`;
 
           // Extrai a primeira imagem caso no futuro vire um array
-          const imagemPrincipal = Array.isArray(item.foto_url) ? item.foto_url[0] : item.foto_url
+          const listaDeFotosValida = Array.isArray(item.foto_url) 
+  ? item.foto_url 
+  : (typeof item.foto_url === 'string' && item.foto_url.startsWith('['))
+    ? JSON.parse(item.foto_url)
+    : [item.foto_url];
+
+const imagemPrincipal = listaDeFotosValida[0] || '';
 
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
@@ -128,10 +138,10 @@ listaDeFotos = textoLimpo.split(',').map((url: string) => url.trim())
                   className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden cursor-pointer active:opacity-90 transition-opacity"
                 >
                   {imagemPrincipal ? (
-                    <img src={imagemPrincipal} alt={item.titulo} className="object-cover h-full w-full" />
-                  ) : (
-                    <span>Sem foto</span>
-                  )}
+  <img src={imagemPrincipal} alt={item.titulo} className="object-cover h-full w-full" />
+) : (
+  <span>Sem foto</span>
+)}
                 </button>
 
                 <div className="flex justify-between items-baseline mb-1">
