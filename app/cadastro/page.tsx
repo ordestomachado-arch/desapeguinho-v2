@@ -13,9 +13,13 @@ const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
 
 
 export default function CadastroAnuncio() {
+  const router = useRouter()
+
+  // 1. Estados dos campos do formulário
   const [titulo, setTitulo] = useState('')
   const [preco, setPreco] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [cidade, setCidade] = useState('Porto Alegre') // 👈 CORRIGIDO: Nome da variável restaurado
   const [bairro, setBairro] = useState('Hípica')
   const [categoria, setCategoria] = useState('Roupas')
   const [genero, setGenero] = useState('unissex')
@@ -23,28 +27,24 @@ export default function CadastroAnuncio() {
   const [cor, setCor] = useState('')
   const [tamanhoRoupa, setTamanhoRoupa] = useState('6M')
   const [tamanhoCalcado, setTamanhoCalcado] = useState('')
-
-  const [, set] = useState('Porto Alegre')
-
-    // Adicione este estado junto com os seus outros useState lá no topo:
+  
+  // Estado do Usuário Logado
   const [userId, setUserId] = useState<string | null>(null)
-  const router = useRouter() // Certifique-se de importar o useRouter de 'next/navigation' no topo
 
-
+  // 2. CORRIGIDO: Atualiza o bairro automaticamente se mudar a cidade
   useEffect(() => {
-
     const bairrosDa = LOCALIDADES_METROPOLITANA[cidade] || []
     if (bairrosDa.length > 0) {
       setBairro(bairrosDa[0]) // Garante que seleciona o primeiro bairro válido da lista
     }
-  }, [])
+  }, [cidade]) // 👈 CORRIGIDO: Adicionado 'cidade' aqui dentro para disparar a mudança
 
-  
-   // Novos estados para o upload de múltiplas fotos e previews
+  // 3. Novos estados para o upload de múltiplas fotos e previews
   const [fotos, setFotos] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [carregando, setCarregando] = useState(false)
   const [mensagem, setMensagem] = useState('')
+
 
   // Proteção da página: Só deixa criar anúncio se estiver logado
   useEffect(() => {
