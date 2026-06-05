@@ -11,6 +11,12 @@ export default function Feed() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
 
+  // Estados para o controle do Modal e das Fotos (Passo 1 de 2)
+  const [modalAberto, setModalAberto] = useState(false)
+  const [fotosModal, setFotosModal] = useState<string[]>([])
+  const [fotoIndexAtivo, setFotoIndexAtivo] = useState(0)
+
+
   useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
@@ -107,17 +113,53 @@ const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego
 const linkWhats = "https://wa.me/55" + numeroLimpo + "?text=" + mensagemCodificada;
 
 
+          // 1. Extração segura para suportar tanto texto antigo quanto a array de 3 fotos futura
+          let listaDeFotosValida: string[] = [];
+          if (item.foto_url) {
+            if (Array.isArray(item.foto_url)) {
+              listaDeFotosValida = item.foto_url;
+            } else if (typeof item.foto_url === 'string') {
+              const textoLimpo = item.foto_url.trim();
+              if (textoLimpo.startsWith('[')) {
+                try {
+                  listaDeFotosValida = JSON.parse(textoLimpo);
+                } catch (e) {
+                  listaDeFotosValida = [textoLimpo];
+                }
+              } else {
+                listaDeFotosValida = textoLimpo.split(',').map((url: string) => url.trim());
+              }
+            }
+          }
+
+          // Pega a primeira imagem de forma segura
+          const imagemPrincipal = listaDeFotosValida[0] || '';
+
+          // Função interna simples para disparar a abertura do modal
+          const acionarCliqueFoto = () => {
+            if (listaDeFotosValida.length > 0) {
+              setFotosModal(listaDeFotosValida);
+              setFotoIndexAtivo(0);
+              setModalAberto(true);
+            }
+          };
+
           return (
             <div key={item.id} className="border border-gray-100 rounded-2xl p-3 shadow-sm flex flex-col justify-between bg-white">
               <div>
-                {/* Espaço da Foto Renderizando a imagem real vinda do Storage */}
-                <div className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden">
-                  {item.foto_url ? (
-                    <img src={item.foto_url} alt={item.titulo} className="object-cover h-full w-full" />
+                {/* MUDANÇA: O container antigo <div> virou um <button> clicável */}
+                <button 
+                  type="button"
+                  onClick={acionarCliqueFoto}
+                  className="w-full h-36 bg-gray-50 rounded-xl mb-3 flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200 overflow-hidden cursor-pointer active:opacity-80 transition-opacity block"
+                >
+                  {imagemPrincipal ? (
+                    <img src={imagemPrincipal} alt={item.titulo} className="object-cover h-full w-full" />
                   ) : (
                     <span>Sem foto</span>
                   )}
-                </div>
+                </button>
+
 
                 {/* Informações de Conexão de Nicho */}
                 <div className="flex justify-between items-baseline mb-1">
