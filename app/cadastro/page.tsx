@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient' 
+import { useRouter } from 'next/navigation'
 
 const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
   'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
