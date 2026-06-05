@@ -119,7 +119,7 @@ export default function Feed() {
           const mensagemCodificada = encodeURIComponent("Olá! Vi seu anúncio do desapego \"" + item.titulo + "\" no Desapeguinho POA e tenho interesse.");
           
           // Se não houver número cadastrado (anúncio antigo incompleto), gera link vazio para não quebrar a tela
-          const linkWhats = numeroCru ? "https://wa.me" + numeroLimpo + "?text=" + mensagemCodificada : "#";
+          const linkWhats = numeroCru ? "https://wa.me/" + numeroLimpo + "?text=" + mensagemCodificada : "#";
 
           // 1. Extração segura para suportar tanto texto antigo quanto a array de 3 fotos futura
           let listaDeFotosValida: string[] = [];
