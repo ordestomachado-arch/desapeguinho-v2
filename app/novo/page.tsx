@@ -30,34 +30,33 @@ export default function Feed() {
   }, [categoriaFiltro, generoFiltro])
 
   // Função que abre a galeria ao clicar na foto
-  const abrirGaleria = (item: any) => {
+  
+   const abrirGaleria = (item: any) => {
     if (!item.foto_url) return
     
     let listaDeFotos: string[] = []
 
-    // Se o dado vier como Array nativo do Supabase (text[])
+    // 1. Se o Supabase já entregou como uma Array nativa do JavaScript
     if (Array.isArray(item.foto_url)) {
       listaDeFotos = item.foto_url
     } 
-    // Se o dado vier como uma String (caso de anúncios antigos ou conversão de texto)
+    // 2. Se entregou como String (Texto puro), limpa e separa as URLs
     else if (typeof item.foto_url === 'string') {
-      if (item.foto_url.startsWith('[') && item.foto_url.endsWith(']')) {
-        try {
-          // Tenta decodificar caso o banco tenha salvo como texto de array JSON
-          listaDeFotos = JSON.parse(item.foto_url)
-        } catch (e) {
-          listaDeFotos = [item.foto_url]
-        }
-      } else {
-        // Se for apenas uma única URL em texto puro, separa por vírgula caso exista
-        listaDeFotos = item.foto_url.split(',')
-      }
+      // Remove colchetes ou aspas que o banco possa ter inserido por erro de sintaxe
+      const textoLimpo = item.foto_url.replace(/[\[\]"']/g, '').trim()
+      
+      // Quebra o texto sempre que encontrar uma vírgula
+      listaDeFotos = textoLimpo.split(',').map(url => url.trim())
     }
       
+    // Remove qualquer item vazio da lista para não quebrar o carrossel
+    listaDeFotos = listaDeFotos.filter(url => url !== '')
+
     setFotosModal(listaDeFotos)
     setFotoIndexAtivo(0)
     setModalAberto(true)
   }
+
 
 
   return (
