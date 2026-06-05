@@ -199,13 +199,68 @@ const linkWhats = "https://wa.me/55" + numeroLimpo + "?text=" + mensagemCodifica
       </div>
 
       {/* Botão Flutuante Laranja "Anunciar" (+) com alinhamento responsivo para o layout mobile */}
+            {/* Botão Flutuante Laranja "Anunciar" (+) */}
       <Link 
         href="/cadastro" 
-        className="fixed bottom-6 right-6 md:right-[calc(50%-11rem)] bg-[#FF7F50] hover:bg-[#FE7D6A] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-orange-100 transition-all hover:scale-110 active:scale-95 z-50 text-3xl font-light"
+        className="fixed bottom-6 right-6 md:right-[calc(50%-11rem)] bg-[#FF7F50] hover:bg-[#FE7D6A] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-orange-100 transition-all hover:scale-110 active:scale-95 z-45 text-3xl font-light"
         title="Anunciar um Desapego"
       >
         +
       </Link>
+
+      {/* MODAL SOBREPOSTO DA GALERIA DE FOTOS */}
+      {modalAberto && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
+          {/* Botão de Fechar o Modal */}
+          <button 
+            type="button"
+            onClick={() => setModalAberto(false)} 
+            className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-all cursor-pointer"
+          >
+            ✕
+          </button>
+          
+          {/* Caixa da Imagem Ampliada com as setas por cima */}
+          <div className="w-full max-w-sm aspect-square bg-zinc-900 rounded-2xl overflow-hidden flex items-center justify-center relative shadow-2xl">
+            <img src={fotosModal[fotoIndexAtivo]} alt="Foto ampliada do desapego" className="w-full h-full object-contain" />
+            
+            {/* Setas de navegação: só aparecem se o anúncio tiver mais de 1 foto */}
+            {fotosModal.length > 1 && (
+              <>
+                <button 
+                  type="button"
+                  onClick={() => setFotoIndexAtivo((prev) => (prev === 0 ? fotosModal.length - 1 : prev - 1))} 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold active:scale-90 transition-transform cursor-pointer"
+                >
+                  ◀
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setFotoIndexAtivo((prev) => (prev === fotosModal.length - 1 ? 0 : prev + 1))} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold active:scale-90 transition-transform cursor-pointer"
+                >
+                  ▶
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Indicador de Páginas (Bolinhas laranjas inferiores) */}
+          {fotosModal.length > 1 && (
+            <div className="flex gap-2 mt-4">
+              {fotosModal.map((_, index) => (
+                <button 
+                  type="button" 
+                  key={index} 
+                  onClick={() => setFotoIndexAtivo(index)} 
+                  className={`h-2 rounded-full transition-all ${fotoIndexAtivo === index ? 'w-6 bg-[#FF7F50]' : 'w-2 bg-gray-500'}`} 
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
+
