@@ -1,4 +1,9 @@
 "use client"
+
+import { useEffect, useState } from 'react'
+import { supabase } from '../../supabaseClient'
+import Link from 'next/link'
+
 const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
 const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([])
 
@@ -10,11 +15,8 @@ const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
   'Novo Hamburgo': ['Todos', 'Centro', 'Hamburgo Velho', 'Lomba Grande']
 }
 
-import { useEffect, useState } from 'react'
-import { supabase } from '../../supabaseClient'
-import Link from 'next/link'
-
 export default function Feed() {
+  
   const [anuncios, setAnuncios] = useState<any[]>([])
   const [carregando, setCarregando] = useState(true)
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
