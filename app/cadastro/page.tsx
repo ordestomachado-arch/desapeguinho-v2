@@ -2,6 +2,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient' 
 
+const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+  'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+  'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
+  'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
+  'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
+}
+
+
 export default function CadastroAnuncio() {
   const [titulo, setTitulo] = useState('')
   const [preco, setPreco] = useState('')
@@ -17,13 +26,7 @@ export default function CadastroAnuncio() {
   const [cidade, setCidade] = useState('Porto Alegre')
 
   useEffect(() => {
-const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
-  'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
-  'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
-  'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
-  'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
-  'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
-}
+
     const bairrosDaCidade = LOCALIDADES_METROPOLITANA[cidade] || []
     if (bairrosDaCidade.length > 0) {
       setBairro(bairrosDaCidade[0]) // Garante que seleciona o primeiro bairro válido da lista
