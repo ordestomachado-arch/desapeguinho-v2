@@ -15,25 +15,32 @@ export default function Feed() {
     async function buscarDesapegos() {
       setCarregando(true)
       
-      // Inicia a query buscando tudo do banco de dados
-      let query = supabase.from('anuncios').select('*')
+      // Busca trazendo o relacionamento dos perfis
+      const { data } = await supabase
+        .from('anuncios')
+        .select('*, perfis:user_id!left(whatsapp, nome)')
+        .order('id', { ascending: false })
 
-      // Aplica os filtros dinamicamente se o usuário selecionar algo diferente de 'Todos'
+      let dadosFiltrados = data || []
+
+      // 1. DESATIVAMOS O FILTRO DE CIDADE temporariamente para testar se os itens voltam
+      // dadosFiltrados = dadosFiltrados.filter(item => !item.cidade || item.cidade === cidadeFiltro)
+
+      // 2. Filtros de Categoria e Gênero (permanecem ativos)
       if (categoriaFiltro !== 'Todos') {
-        query = query.eq('categoria', categoriaFiltro)
+        dadosFiltrados = dadosFiltrados.filter(item => item.categoria === categoriaFiltro)
       }
       if (generoFiltro !== 'Todos') {
-        query = query.eq('genero', generoFiltro)
+        dadosFiltrados = dadosFiltrados.filter(item => item.genero === generoFiltro)
       }
 
-      const { data, error } = await query.order('criado_em', { ascending: false })
-      
-      if (data) setAnuncios(data)
+      setAnuncios(dadosFiltrados)
       setCarregando(false)
     }
 
     buscarDesapegos()
-  }, [categoriaFiltro, generoFiltro]) // Executa novamente o filtro se o usuário clicar em uma tag
+  }, [cidadeFiltro, categoriaFiltro, generoFiltro])
+
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-24">
