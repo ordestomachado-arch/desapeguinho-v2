@@ -93,9 +93,9 @@ export default function Feed() {
       <div className="grid grid-cols-2 gap-4">
         {!carregando && anuncios.map((item) => {
           // Fallback seguro para o link do Whatsapp caso o número venha formatado
-          const numeroLimpo = item.whatsapp ? item.whatsapp.replace(/\D/g, '') : ''
+          const numeroLimpo = item.whatsapp?item.whatsapp.replace(/\D/g, '') : ''
           const mensagemCodificada = encodeURIComponent(`Olá! Vi seu anúncio "${item.titulo}" no Desapeguinho POA e fiquei interessada.`);
-          const linkWhats = `https://wa.me{numeroLimpo}?text=${mensagemCodificada}`;
+          const linkWhats = `https://wa.me/55${numeroLimpo}?text=${mensagemCodificada}`;
 
           // Extrai a primeira imagem caso no futuro vire um array
           const imagemPrincipal = Array.isArray(item.foto_url) ? item.foto_url[0] : item.foto_url
