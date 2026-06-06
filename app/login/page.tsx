@@ -99,23 +99,24 @@ export default function Autenticacao() {
       } 
       
       else if (modo === 'cadastro') {
-
-                const { data, error } = await supabase.auth.signUp({ email, password: senha })
+        const { data, error } = await supabase.auth.signUp({ 
+          email: email, 
+          password: senha,
+          options: {
+            // Enviamos os dados do vendedor empacotados junto com a criação da conta
+            data: {
+              full_name: nome,
+              whatsapp_cadastro: whatsappLimpo
+            }
+          }
+        })
+        
         if (error) throw error
 
-        if (data.user) {
-          // CORRIGIDO: Mudamos de .insert() para .update() para atualizar a linha que a Trigger já criou
-          await supabase
-            .from('perfis')
-            .update({ 
-              nome: nome, 
-              whatsapp: whatsappLimpo, 
-              aceitou_termos: true 
-            })
-            .eq('id', data.user.id) // 👈 Garante que atualiza apenas o usuário atual
-        }
-        setMensagem('🎉 Conta criada! Verifique seu e-mail para confirmar.')
+        // Mensagem direta sem pedir validação de e-mail, já que desativamos no painel
+        setMensagem('🎉 Conta criada com sucesso! Você já pode anunciar seus desapegos.')
       }
+
 
       
       else if (modo === 'completar_perfil') {
