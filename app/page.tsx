@@ -12,6 +12,8 @@ export default function Feed() {
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
 
   const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
+  const [usuarioLogado, setUsuarioLogado] = useState(false)
+
 
   const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
     'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
@@ -26,6 +28,15 @@ export default function Feed() {
   const [modalAberto, setModalAberto] = useState(false)
   const [fotosModal, setFotosModal] = useState<string[]>([])
   const [fotoIndexAtivo, setFotoIndexAtivo] = useState(0)
+
+    useEffect(() => {
+    async function checarSessao() {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUsuarioLogado(!!session) // Fica 'true' se houver usuário e 'false' se estiver deslogado
+    }
+    checarSessao()
+  }, [])
+
 
 
     useEffect(() => {
@@ -67,35 +78,39 @@ export default function Feed() {
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
                 
-      {/* CABEÇALHO LIMPO E CORRIGIDO DIRETO */}
+            {/* CABEÇALHO DINÂMICO BLINDADO */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
           
-          <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2 py-1 rounded-full font-bold transition-all">
-            🎒 Meus Itens
-          </Link>
+          {/* REGRA: Tudo o que estiver aqui dentro só aparece se houver usuário logado */}
+          {usuarioLogado && (
+            <div className="flex items-center gap-2">
+              <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2 py-1 rounded-full font-bold transition-all">
+                🎒 Meus Itens
+              </Link>
 
-          <button
-            type="button"
-            onClick={async () => {
-              // Executa a confirmação diretamente de forma isolada
-              const querSair = window.confirm("👶 Deseja mesmo sair da sua conta?")
-              if (!querSair) return
+              <button
+                type="button"
+                onClick={async () => {
+                  const querSair = window.confirm("👶 Deseja mesmo sair da sua conta?")
+                  if (!querSair) return
 
-              try {
-                await supabase.auth.signOut()
-                localStorage.clear()
-                sessionStorage.clear()
-                window.location.href = "/"
-              } catch (erro) {
-                alert("Erro ao sair: " + erro)
-              }
-            }}
-            className="text-[10px] bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-500 px-2 py-1 rounded-full font-bold transition-all cursor-pointer border-0 inline-block"
-          >
-            Sair
-          </button>
+                  try {
+                    await supabase.auth.signOut()
+                    localStorage.clear()
+                    sessionStorage.clear()
+                    window.location.href = "/"
+                  } catch (erro) {
+                    alert("Erro ao sair: " + erro)
+                  }
+                }}
+                className="text-[10px] bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-500 px-2 py-1 rounded-full font-bold transition-all cursor-pointer border-0 inline-block"
+              >
+                Sair
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Seletor Dinâmico de Cidades da Região Metropolitana */}
@@ -114,7 +129,6 @@ export default function Feed() {
           </select>
         </div>
       </header>
-
       
       {/* Filtros Rápidos Estilizados (Tags Clicáveis) */}
       <div className="mb-6">
