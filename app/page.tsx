@@ -11,17 +11,28 @@ export default function Feed() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('Todos')
   const [generoFiltro, setGeneroFiltro] = useState('Todos')
 
+  const [cidadeFiltro, setCidadeFiltro] = useState('Porto Alegre')
+
+  const LOCALIDADES_METROPOLITANA: Record<string, string[]> = {
+    'Porto Alegre': ['Hípica', 'Azenha', 'Pinheiro', 'Menino Deus', 'Gloria', 'Moinhos de Vento', 'Cavalhada', 'Ipanema', 'Tristeza', 'Centro', 'Restinga', 'Belem Novo', 'Zona Sul', 'Zona Norte'],
+    'Canoas': ['Centro', 'Marechal Rondon', 'Niterói', 'Nossa Senhora das Graças', 'Mathias Velho'],
+    'Gravataí': ['Centro', 'Parque dos Anjos', 'Morada do Vale'],
+    'Viamão': ['Centro', 'Santa Isabel', 'Viamópolis', 'Esmeralda'],
+    'Novo Hamburgo': ['Centro', 'Hamburgo Velho', 'Lomba Grande']
+  }
+  
+
   // Estados para o controle do Modal e das Fotos (Passo 1 de 2)
   const [modalAberto, setModalAberto] = useState(false)
   const [fotosModal, setFotosModal] = useState<string[]>([])
   const [fotoIndexAtivo, setFotoIndexAtivo] = useState(0)
 
 
-  useEffect(() => {
+    useEffect(() => {
     async function buscarDesapegos() {
       setCarregando(true)
       
-      // MUDANÇA: Agora busca da nossa View unificada usando o select(*) simples que você sabe que funciona!
+      // Mantém a busca da sua View unificada que já está funcionando 100%
       let query = supabase.from('vw_anuncios').select('*')
 
       if (categoriaFiltro !== 'Todos') {
@@ -33,23 +44,54 @@ export default function Feed() {
 
       const { data } = await query.order('id', { ascending: false })
       
-      if (data) setAnuncios(data)
+      let dadosFiltrados = data || []
+
+      // NOVO: Filtro dinâmico por cidade no JavaScript (Sem quebrar os dados antigos)
+      if (cidadeFiltro !== 'Todos') {
+        dadosFiltrados = dadosFiltrados.filter(item => 
+          cidadeFiltro === 'Porto Alegre' 
+            ? (!item.cidade || item.cidade === 'Porto Alegre') 
+            : item.cidade === cidadeFiltro
+        )
+      }
+      
+      setAnuncios(dadosFiltrados)
       setCarregando(false)
     }
 
     buscarDesapegos()
-  }, [categoriaFiltro, generoFiltro])
+  }, [cidadeFiltro, categoriaFiltro, generoFiltro]) // Adicionado cidadeFiltro na lista de monitoramento
+
 
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
-      {/* Cabeçalho igual ao do Penpot */}
+           {/* Cabeçalho atualizado com o seletor dinâmico de Cidades e o botão Meus Itens */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
-        <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
-        <span className="text-sm font-medium bg-gray-50 px-3 py-1 rounded-full text-gray-600">
-          📍 Porto Alegre
-        </span>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
+          <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2.5 py-1 rounded-full font-bold transition-all">
+            🎒 Meus Itens
+          </Link>
+        </div>
+        
+        {/* Seletor Dinâmico de Cidades da Região Metropolitana */}
+        <div className="relative inline-block">
+          <span className="absolute left-2.5 top-1.5 text-xs">📍</span>
+          <select 
+            value={cidadeFiltro}
+            onChange={(e) => setCidadeFiltro(e.target.value)}
+            className="pl-7 pr-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-600 focus:outline-none appearance-none cursor-pointer"
+          >
+            {Object.keys(LOCALIDADES_METROPOLITANA).map((cidade) => (
+              <option key={cidade} value={cidade}>
+                {cidade}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
+
 
       {/* Filtros Rápidos Estilizados (Tags Clicáveis) */}
       <div className="mb-6">
