@@ -66,13 +66,26 @@ export default function Feed() {
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
-           {/* Cabeçalho atualizado com o seletor dinâmico de Cidades e o botão Meus Itens */}
+                 {/* CABEÇALHO COMPLETO COM MEUS ITENS, LOGOUT E SELETOR DE CIDADES */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#FF7F50]">Desapeguinho</h1>
           <Link href="/meus-anuncios" className="text-[10px] bg-orange-50 hover:bg-orange-100 text-[#FF7F50] px-2.5 py-1 rounded-full font-bold transition-all">
             🎒 Meus Itens
           </Link>
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmar = window.confirm("👶 Deseja mesmo sair da sua conta?")
+              if (confirmar) {
+                await supabase.auth.signOut()
+                window.location.reload() // Recarrega a página para limpar a sessão no navegador
+              }
+            }}
+            className="text-[10px] bg-gray-100 hover:bg-red-50 hover:text-red-500 text-gray-500 px-2 py-1 rounded-full font-bold transition-all cursor-pointer border-0"
+          >
+            Sair
+          </button>
         </div>
         
         {/* Seletor Dinâmico de Cidades da Região Metropolitana */}
@@ -91,6 +104,7 @@ export default function Feed() {
           </select>
         </div>
       </header>
+
 
 
       {/* Filtros Rápidos Estilizados (Tags Clicáveis) */}
