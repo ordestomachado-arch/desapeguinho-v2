@@ -149,10 +149,19 @@ export default function CadastroAnuncio() {
   }
 return (
     <div className="max-w-md mx-auto p-6 bg-white min-h-screen text-gray-800 shadow-lg">
-      <header className="mb-6 flex items-center justify-between border-b pb-4">
-        <h1 className="text-2xl font-bold text-[#FF7F50]">Desapeguinho POA</h1>
-        <span className="text-xs bg-orange-100 text-[#FF7F50] px-2 py-1 rounded-full font-semibold">Next.js Client</span>
-      </header>
+      {/* ADICIONE ESTE BLOCO NO INÍCIO DO SEU RETURN NA TELA DE CADASTRO */}
+<header className="mb-6 flex items-center justify-between border-b pb-4">
+  <Link 
+    href="/" 
+    className="text-sm font-medium text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
+  >
+    ◀ Voltar ao Feed
+  </Link>
+  <span className="text-xs bg-orange-100 text-[#FF7F50] px-2 py-1 rounded-full font-semibold">
+    Novo Desapego
+  </span>
+</header>
+
 
       {mensagem && (
         <div className={`p-3 rounded-xl mb-4 text-sm text-center font-medium ${mensagem.includes('❌') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
