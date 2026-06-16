@@ -185,10 +185,16 @@ export default function MeusAnuncios() {
         <div className="flex-1 flex flex-col min-w-0 h-20 justify-between">
           <div>
             <h3 className="text-xs font-bold text-gray-700 truncate">{item.titulo}</h3>
-            <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
-              <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">{item.tamanho}</span>
-              <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">{item.genero}</span>
-            </div>
+        <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
+  {/* Mostra o tamanho da roupa ou do calçado, dependendo do que o anúncio possuir */}
+  <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">
+    {item.tamanho_roupa || item.tamanho_calcado || 'U'}
+  </span>
+  <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">
+    {item.genero}
+  </span>
+</div>
+
             <p className="text-sm font-extrabold text-gray-900 mt-1">
               R$ {Number(item.preco).toFixed(2).replace('.', ',')}
             </p>
