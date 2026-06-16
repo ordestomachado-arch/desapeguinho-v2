@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '../../supabaseClient'
 import Link from 'next/link'
 
 export default function MeusAnuncios() {
