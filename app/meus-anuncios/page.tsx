@@ -158,7 +158,7 @@ export default function MeusAnuncios() {
         </div>
       )}
 
-     // LISTA DE ANÚNCIOS (LAYOUT COMPACTO EM LINHA)
+     {/* LISTA DE ANÚNCIOS (LAYOUT COMPACTO EM LINHA) */}
 <div className="flex flex-col gap-4">
   {!carregando && anunciosFiltrados.map((item) => {
     
