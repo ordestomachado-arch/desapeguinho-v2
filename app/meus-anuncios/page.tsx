@@ -28,21 +28,21 @@ export default function MeusAnuncios() {
   useEffect(() => {
     if (!userId) return
 
-    async function buscarMeusDesapegos() {
-      setCarregando(true)
-      
-      // Ajuste o nome da tabela abaixo ('anuncios') caso ela se chame diferente no seu banco
-      const { data, error } = await supabase
-        .from('anuncios') 
-        .select('*')
-        .eq('user_id', userId)
-        .order('id', { ascending: false })
+   // Dentro do useEffect de busca em app/meus-anuncios/page.tsx
+async function buscarMeusDesapegos() {
+  setCarregando(true)
+  
+  const { data, error } = await supabase
+    .from('vw_anuncios') // 👈 Mudado para ler da View com status e dados do vendedor unificados
+    .select('*')
+    .eq('user_id', userId)
+    .order('id', { ascending: false })
 
-      if (!error && data) {
-        setAnuncios(data)
-      }
-      setCarregando(false)
-    }
+  if (!error && data) {
+    setAnuncios(data)
+  }
+  setCarregando(false)
+}
 
     buscarMeusDesapegos()
   }, [userId])
