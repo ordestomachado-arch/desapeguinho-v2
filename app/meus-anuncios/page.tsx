@@ -158,64 +158,64 @@ export default function MeusAnuncios() {
         </div>
       )}
 
-      {/* LISTA DE ANÚNCIOS (LAYOUT COMPACTO EM LINHA) */}
-      <div className="flex flex-col gap-4">
-        {!carregando && anunciosFiltrados.map((item) => {
-          // Fallback seguro de fotos (Suporta array de strings JSON ou URLs diretas)
-          let fotoCapa = '/placeholder-infantil.png';
-          if (item.fotos) {
-            try {
-              const parsed = typeof item.fotos === 'string' ? JSON.parse(item.fotos) : item.fotos;
-              if (Array.isArray(parsed) && parsed.length > 0) fotoCapa = parsed[0];
-            } catch {
-              if (typeof item.fotos === 'string') fotoCapa = item.fotos;
-            }
-          }
+     // LISTA DE ANÚNCIOS (LAYOUT COMPACTO EM LINHA)
+<div className="flex flex-col gap-4">
+  {!carregando && anunciosFiltrados.map((item) => {
+    
+    // CORREÇÃO: Lê a coluna correta 'foto_url' e extrai a primeira foto do Array
+    let fotoCapa = '/placeholder-infantil.png'; // Imagem de fallback se estiver vazio
 
-          return (
-            <div key={item.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm items-start">
-              {/* Miniatura da Foto */}
-              <img 
-                src={fotoCapa} 
-                alt={item.titulo} 
-                className="w-20 h-20 object-cover rounded-lg bg-gray-50 border flex-shrink-0"
-              />
+    if (item.foto_url && Array.isArray(item.foto_url) && item.foto_url.length > 0) {
+      fotoCapa = item.foto_url[0]; // Pega a primeira imagem do array do Postgres
+    } else if (typeof item.foto_url === 'string' && item.foto_url.trim() !== '') {
+      // Caso haja algum registro antigo salvo como string pura
+      fotoCapa = item.foto_url;
+    }
 
-              {/* Informações Básicas e Botões de Ação */}
-              <div className="flex-1 flex flex-col min-w-0 h-20 justify-between">
-                <div>
-                  <h3 className="text-xs font-bold text-gray-700 truncate">{item.titulo}</h3>
-                  <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
-                    <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">{item.tamanho}</span>
-                    <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">{item.genero}</span>
-                  </div>
-                  <p className="text-sm font-extrabold text-gray-900 mt-1">
-                    R$ {Number(item.preco).toFixed(2).replace('.', ',')}
-                  </p>
-                </div>
+    return (
+      <div key={item.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm items-start">
+        {/* Miniatura da Foto corrigida */}
+        <img 
+          src={fotoCapa} 
+          alt={item.titulo} 
+          className="w-20 h-20 object-cover rounded-lg bg-gray-50 border flex-shrink-0"
+        />
 
-                {/* PAINEL DE BOTÕES DE OPERAÇÃO RÁPIDA */}
-                <div className="flex gap-2 items-center mt-1">
-                  {item.status !== 'vendido' && (
-                    <button
-                      onClick={() => marcarComoVendido(item.id)}
-                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0"
-                    >
-                      ✓ Marcar Vendido
-                    </button>
-                  )}
-                  <button
-                    onClick={() => excluirAnuncio(item.id)}
-                    className="bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0 flex items-center gap-0.5"
-                  >
-                    🗑️ Excluir
-                  </button>
-                </div>
-              </div>
+        {/* Informações Básicas e Botões de Ação */}
+        <div className="flex-1 flex flex-col min-w-0 h-20 justify-between">
+          <div>
+            <h3 className="text-xs font-bold text-gray-700 truncate">{item.titulo}</h3>
+            <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
+              <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">{item.tamanho}</span>
+              <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">{item.genero}</span>
             </div>
-          )
-        })}
+            <p className="text-sm font-extrabold text-gray-900 mt-1">
+              R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+            </p>
+          </div>
+
+          {/* PAINEL DE BOTÕES DE OPERAÇÃO RÁPIDA */}
+          <div className="flex gap-2 items-center mt-1">
+            {item.status !== 'vendido' && (
+              <button
+                onClick={() => marcarComoVendido(item.id)}
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0"
+              >
+                ✓ Marcar Vendido
+              </button>
+            )}
+            <button
+              onClick={() => excluirAnuncio(item.id)}
+              className="bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0 flex items-center gap-0.5"
+            >
+              🗑️ Excluir
+            </button>
+          </div>
+        </div>
       </div>
+    )
+  })}
+</div>
 
     </div>
   )
