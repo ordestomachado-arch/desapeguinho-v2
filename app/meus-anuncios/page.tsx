@@ -9,45 +9,41 @@ export default function MeusAnuncios() {
   const [abaAtiva, setAbaAtiva] = useState<'ativos' | 'vendidos'>('ativos')
   const [userId, setUserId] = useState<string | null>(null)
 
-  // Carrega a sessão do usuário logado via Google
+  // 1. Carrega a sessão do usuário logado via Google
   useEffect(() => {
     async function obterUsuario() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUserId(session.user.id)
       } else {
-        // Se não estiver logado, redireciona para a página inicial/login
         window.location.href = "/"
       }
     }
     obterUsuario()
   }, [])
 
-  // Busca os anúncios pertencentes estritamente a este usuário
-  // Nota: Usamos a tabela original escrita (ex: 'anuncios') para permitir updates de status
+  // 2. Busca os anúncios pertencentes estritamente a este usuário
   useEffect(() => {
     if (!userId) return
 
-   // Dentro do useEffect de busca em app/meus-anuncios/page.tsx
-async function buscarMeusDesapegos() {
-  setCarregando(true)
-  
-  const { data, error } = await supabase
-    .from('vw_anuncios') // 👈 Mudado para ler da View com status e dados do vendedor unificados
-    .select('*')
-    .eq('user_id', userId)
-    .order('id', { ascending: false })
+    async function buscarMeusDesapegos() {
+      setCarregando(true)
+      const { data, error } = await supabase
+        .from('vw_anuncios') 
+        .select('*')
+        .eq('user_id', userId)
+        .order('id', { ascending: false })
 
-  if (!error && data) {
-    setAnuncios(data)
-  }
-  setCarregando(false)
-}
+      if (!error && data) {
+        setAnuncios(data)
+      }
+      setCarregando(false)
+    }
 
     buscarMeusDesapegos()
   }, [userId])
 
-  // Função para mudar o status para Vendido (Inativo)
+  // 3. Função para mudar o status manualmente (Venda física/externa ao app)
   async function marcarComoVendido(idAnuncio: number) {
     const confirmar = window.confirm("🎉 Parabéns pela venda! Deseja retirar este item do feed principal?")
     if (!confirmar) return
@@ -55,12 +51,11 @@ async function buscarMeusDesapegos() {
     try {
       const { error } = await supabase
         .from('anuncios')
-        .update({ status: 'vendido' }) // Certifique-se de ter a coluna 'status' no banco
+        .update({ status: 'vendido' }) 
         .eq('id', idAnuncio)
 
       if (error) throw error
 
-      // Atualiza o estado local na tela do usuário
       setAnuncios(prev => prev.map(item => 
         item.id === idAnuncio ? { ...item, status: 'vendido' } : item
       ))
@@ -69,7 +64,7 @@ async function buscarMeusDesapegos() {
     }
   }
 
-  // Função para Excluir permanentemente o anúncio
+  // 4. Função para Excluir permanentemente o anúncio
   async function excluirAnuncio(idAnuncio: number) {
     const confirmar = window.confirm("🚨 Tem certeza que deseja excluir permanentemente este anúncio?")
     if (!confirmar) return
@@ -82,26 +77,27 @@ async function buscarMeusDesapegos() {
 
       if (error) throw error
 
-      // Remove o item da lista local do estado
       setAnuncios(prev => prev.filter(item => item.id !== idAnuncio))
     } catch (erro) {
       alert("Erro ao excluir anúncio: " + erro)
     }
   }
 
-  // Filtra os dados carregados de acordo com a aba selecionada pelo usuário
+  // 5. Filtros padronizados para evitar bugs de string (compatível com 'active' e 'disponivel')
   const anunciosFiltrados = anuncios.filter(item => {
+    const statusAtual = item.status?.toLowerCase()
     if (abaAtiva === 'ativos') {
-      return item.status === 'active' || !item.status // Mantém compatibilidade com nulos antigos
+      return statusAtual === 'active' || statusAtual === 'disponivel' || !statusAtual
     } else {
-      return item.status === 'vendido'
+      // Itens vendidos pelo app passam por estados como 'pago' ou 'em_transito'
+      return ['vendido', 'pago', 'em_transito', 'entregue'].includes(statusAtual)
     }
   })
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white min-h-screen text-gray-800 shadow-lg pb-28 relative">
       
-      {/* CABEÇALHO COM BOTÃO RETORNAR */}
+      {/* CABEÇALHO */}
       <header className="flex justify-between items-center mb-6 border-b pb-3">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-gray-500 text-sm font-medium hover:text-gray-700 flex items-center gap-1">
@@ -121,7 +117,7 @@ async function buscarMeusDesapegos() {
               : 'border-transparent text-gray-400 hover:text-gray-600'
           }`}
         >
-          🟢 Ativos ({anuncios.filter(i => i.status === 'active' || !i.status).length})
+          🟢 Ativos ({anuncios.filter(i => i.status === 'active' || i.status === 'disponivel' || !i.status).length})
         </button>
         <button
           onClick={() => setAbaAtiva('vendidos')}
@@ -131,7 +127,7 @@ async function buscarMeusDesapegos() {
               : 'border-transparent text-gray-400 hover:text-gray-600'
           }`}
         >
-          🤝 Vendidos ({anuncios.filter(i => i.status === 'vendido').length})
+          🤝 Vendidos ({anuncios.filter(i => ['vendido', 'pago', 'em_transito', 'entregue'].includes(i.status)).length})
         </button>
       </div>
 
@@ -142,7 +138,7 @@ async function buscarMeusDesapegos() {
         </div>
       )}
 
-      {/* ESTADO VAZIO COM APELO VISUAL */}
+      {/* ESTADO VAZIO */}
       {!carregando && anunciosFiltrados.length === 0 && (
         <div className="text-center py-16 px-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
           <p className="text-sm text-gray-400 mb-4">
@@ -158,71 +154,85 @@ async function buscarMeusDesapegos() {
         </div>
       )}
 
-     {/* LISTA DE ANÚNCIOS (LAYOUT COMPACTO EM LINHA) */}
-<div className="flex flex-col gap-4">
-  {!carregando && anunciosFiltrados.map((item) => {
-    
-    // CORREÇÃO: Lê a coluna correta 'foto_url' e extrai a primeira foto do Array
-    let fotoCapa = '/placeholder-infantil.png'; // Imagem de fallback se estiver vazio
+      {/* LISTA DE ANÚNCIOS */}
+      <div className="flex flex-col gap-4">
+        {!carregando && anunciosFiltrados.map((item) => {
+          
+          let fotoCapa = '/placeholder-infantil.png';
+          if (item.foto_url && Array.isArray(item.foto_url) && item.foto_url.length > 0) {
+            fotoCapa = item.foto_url[0];
+          } else if (typeof item.foto_url === 'string' && item.foto_url.trim() !== '') {
+            fotoCapa = item.foto_url;
+          }
 
-    if (item.foto_url && Array.isArray(item.foto_url) && item.foto_url.length > 0) {
-      fotoCapa = item.foto_url[0]; // Pega a primeira imagem do array do Postgres
-    } else if (typeof item.foto_url === 'string' && item.foto_url.trim() !== '') {
-      // Caso haja algum registro antigo salvo como string pura
-      fotoCapa = item.foto_url;
-    }
+          return (
+            <div key={item.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm items-start">
+              <img 
+                src={fotoCapa} 
+                alt={item.titulo} 
+                className="w-20 h-20 object-cover rounded-lg bg-gray-50 border flex-shrink-0"
+              />
 
-    return (
-      <div key={item.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm items-start">
-        {/* Miniatura da Foto corrigida */}
-        <img 
-          src={fotoCapa} 
-          alt={item.titulo} 
-          className="w-20 h-20 object-cover rounded-lg bg-gray-50 border flex-shrink-0"
-        />
+              <div className="flex-1 flex flex-col min-w-0 min-h-[80px] justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-gray-700 truncate">{item.titulo}</h3>
+                  <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">
+                      {item.tamanho_roupa || item.tamanho_calcado || 'U'}
+                    </span>
+                    <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">
+                      {item.genero}
+                    </span>
+                  </div>
+                  <p className="text-sm font-extrabold text-gray-900 mt-1">
+                    R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
 
-        {/* Informações Básicas e Botões de Ação */}
-        <div className="flex-1 flex flex-col min-w-0 h-20 justify-between">
-          <div>
-            <h3 className="text-xs font-bold text-gray-700 truncate">{item.titulo}</h3>
-        <div className="flex gap-2 text-[10px] text-gray-400 mt-0.5">
-  {/* Mostra o tamanho da roupa ou do calçado, dependendo do que o anúncio possuir */}
-  <span className="bg-gray-100 px-1.5 py-0.5 rounded uppercase font-medium">
-    {item.tamanho_roupa || item.tamanho_calcado || 'U'}
-  </span>
-  <span className="bg-gray-100 px-1.5 py-0.5 rounded capitalize font-medium">
-    {item.genero}
-  </span>
-</div>
+                {/* PAINEL DE BOTÕES INTELIGENTE */}
+                <div className="flex gap-2 items-center mt-2 pt-1 border-t border-gray-50">
+                  {/* SE O ITEM FOI VENDIDO DENTRO DO APP (Fluxo Mercado Pago/Lalamove) */}
+                  {['pago', 'em_transito'].includes(item.status) && (
+                    <div className="w-full flex justify-between items-center bg-blue-50 p-1.5 rounded text-[10px] text-blue-700 font-medium">
+                      <span>🛵 {item.delivery_method === 'motoboy' ? 'Motoboy Lalamove acionado' : 'Aguardando Retirada'}</span>
+                      {item.delivery_method === 'retirada' && (
+                        <button className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[9px] border-0 cursor-pointer">
+                          📷 Escanear QR
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-            <p className="text-sm font-extrabold text-gray-900 mt-1">
-              R$ {Number(item.preco).toFixed(2).replace('.', ',')}
-            </p>
-          </div>
+                  {/* FLUXO TRADICIONAL PARA ITENS ATIVOS */}
+                  {(item.status === 'active' || item.status === 'disponivel' || !item.status) && (
+                    <>
+                      <button
+                        onClick={() => marcarComoVendido(item.id)}
+                        className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0"
+                      >
+                        ✓ Vendi por fora
+                      </button>
+                      <button
+                        onClick={() => excluirAnuncio(item.id)}
+                        className="bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-500 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0 ml-auto"
+                      >
+                        🗑️ Excluir
+                      </button>
+                    </>
+                  )}
 
-          {/* PAINEL DE BOTÕES DE OPERAÇÃO RÁPIDA */}
-          <div className="flex gap-2 items-center mt-1">
-            {item.status !== 'vendido' && (
-              <button
-                onClick={() => marcarComoVendido(item.id)}
-                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0"
-              >
-                ✓ Marcar Vendido
-              </button>
-            )}
-            <button
-              onClick={() => excluirAnuncio(item.id)}
-              className="bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer border-0 flex items-center gap-0.5"
-            >
-              🗑️ Excluir
-            </button>
-          </div>
-        </div>
+                  {/* STATUS FINAL DE ENTREGUE */}
+                  {['vendido', 'entregue'].includes(item.status) && (
+                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                      🎉 Venda Finalizada
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
-    )
-  })}
-</div>
-
     </div>
   )
 }
